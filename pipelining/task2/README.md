@@ -1,0 +1,1 @@
+Build and run docker image:`docker build -t anatoliisatanovskyi.bigdata201.pipelining ./src/docker`

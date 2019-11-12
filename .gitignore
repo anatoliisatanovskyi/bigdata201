@@ -1,0 +1,11 @@
+# Java
+*.class
+**/target/
+**/.classpath
+
+#Logger
+**/log/*.log
+**/log/*.log.[0-9]
+
+#Eclipse
+**/.settings
