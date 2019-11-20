@@ -8,5 +8,8 @@
 	<packaging>pom</packaging>
 	<modules>
 		<module>pipelining</module>
+		<module>hortonworks</module>
+		<module>kafka</module>
+		<module>commons</module>
 	</modules>
 </project>

@@ -4,16 +4,17 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>anatoliisatanovskyi.bigdata201</groupId>
-		<artifactId>pipelining</artifactId>
+		<artifactId>kafka</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
-	<artifactId>task2</artifactId>
+	<artifactId>kafka-task2</artifactId>
 
 	<properties>
 		<jackson.version>2.10.0</jackson.version>
 	</properties>
 
 	<dependencies>
+
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
@@ -29,6 +30,17 @@
 			<artifactId>jackson-annotations</artifactId>
 			<version>${jackson.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.kafka</groupId>
+			<artifactId>kafka-clients</artifactId>
+			<version>2.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>1.7.25</version>
+		</dependency>
+
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>commons</artifactId>
@@ -80,10 +92,15 @@
 							<goal>single</goal>
 						</goals>
 						<configuration>
+							<archive>
+								<manifest>
+									<mainClass>anatoliisatanovskyi.bigdata201.kafka.HotelsWeatherProcessor</mainClass>
+								</manifest>
+							</archive>
 							<descriptorRefs>
 								<descriptorRef>jar-with-dependencies</descriptorRef>
 							</descriptorRefs>
-							<finalName>coords-processor</finalName>
+							<finalName>hotels-weather-processor</finalName>
 							<appendAssemblyId>false</appendAssemblyId>
 						</configuration>
 					</execution>

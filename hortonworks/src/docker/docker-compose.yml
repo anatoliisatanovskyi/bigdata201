@@ -1,0 +1,6 @@
+version: '3'
+services:
+   proxy:
+      image: "hortonworks/sandbox-proxy:1.0"
+   hdp:
+      image: "hortonworks/sandbox-hdp:3.0.1"

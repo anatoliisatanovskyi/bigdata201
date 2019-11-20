@@ -1,15 +1,14 @@
 package anatoliisatanovskyi.bigdata201.pipelining.model;
 
-import ch.hsr.geohash.GeoHash;
+import anatoliisatanovskyi.bigdata201.commons.Geohash;
+import anatoliisatanovskyi.bigdata201.commons.Geohashable;
 
-public class LatLng {
+public class LatLng implements Geohashable {
 
-	private final Double lat;
-	private final Double lng;
+	private final Geohash geohash;
 
 	public LatLng(Double lat, Double lng) {
-		this.lat = lat;
-		this.lng = lng;
+		this.geohash = new Geohash(lat, lng);
 	}
 
 	public LatLng(String latStr, String lngStr) {
@@ -28,18 +27,19 @@ public class LatLng {
 	}
 
 	public boolean validate() {
-		return lat != null && lng != null;
-	}
-
-	public String geohash(int precision) {
-		return GeoHash.withCharacterPrecision(lat, lng, precision).toBase32();
+		return geohash.getLat() != null && geohash.getLng() != null;
 	}
 
 	public Double getLat() {
-		return lat;
+		return geohash.getLat();
 	}
 
 	public Double getLng() {
-		return lng;
+		return geohash.getLng();
+	}
+
+	@Override
+	public String geohash(int precision) {
+		return geohash.geohash(precision);
 	}
 }

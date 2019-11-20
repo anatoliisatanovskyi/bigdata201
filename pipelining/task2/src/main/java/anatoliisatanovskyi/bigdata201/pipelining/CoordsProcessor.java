@@ -22,13 +22,28 @@ public class CoordsProcessor {
 	 *         values - returns null
 	 */
 	public String processToGeohash(String lat, String lng) {
-		return processToGeohash(new LatLng(lat, lng));
+		return processToGeohash(lat, lng, geohashLength);
 	}
 
+	public String processToGeohash(String lat, String lng, int geohashLength) {
+		return processToGeohash(Double.parseDouble(lat), Double.parseDouble(lng), geohashLength);
+	}
+
+	public String processToGeohash(Double lat, Double lng, int geohashLength) {
+		if (lat == null || lng == null) {
+			return null;
+		}
+		return processToGeohash(new LatLng(lat, lng), geohashLength);
+	}
+	
 	private String processToGeohash(LatLng latLng) {
-		return latLng != null && latLng.validate() ? latLng.geohash(geohashLength) : null;
+		return processToGeohash(latLng, this.geohashLength);
 	}
-
+	
+	private String processToGeohash(LatLng latLng, int precision) {
+		return latLng.geohash(precision);
+	}
+	
 	/**
 	 * Makes 3rd party api call to fetch coordinates for given country, city and
 	 * address.
