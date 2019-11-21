@@ -94,13 +94,13 @@
 						<configuration>
 							<archive>
 								<manifest>
-									<mainClass>anatoliisatanovskyi.bigdata201.kafka.HotelsWeatherProcessor</mainClass>
+									<mainClass>anatoliisatanovskyi.bigdata201.kafka.Runner</mainClass>
 								</manifest>
 							</archive>
 							<descriptorRefs>
 								<descriptorRef>jar-with-dependencies</descriptorRef>
 							</descriptorRefs>
-							<finalName>hotels-weather-processor</finalName>
+							<finalName>hotels-weather-enricher</finalName>
 							<appendAssemblyId>false</appendAssemblyId>
 						</configuration>
 					</execution>

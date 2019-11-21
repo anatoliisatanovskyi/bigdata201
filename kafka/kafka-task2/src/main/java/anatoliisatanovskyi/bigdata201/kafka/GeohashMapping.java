@@ -14,7 +14,9 @@ public class GeohashMapping<G extends Geohashable> {
 	public void store(G hotel, Range precision) {
 		String geohash = hotel.geohash(precision.getMax());
 		if (geohash != null) {
-			for (int step = precision.getMin(); step <= geohash.length() || step <= precision.getMax(); step++) {
+			int max = precision.getMax() > geohash.length() ? geohash.length() : precision.getMax();
+			int min = precision.getMin() > 0 ? precision.getMin() : 1;
+			for (int step = max; step >= min; step--) {
 				String geohashKey = geohash.substring(0, step);
 				mapping.putIfAbsent(geohashKey, new ArrayList<>());
 				mapping.get(geohashKey).add(hotel);
@@ -22,16 +24,18 @@ public class GeohashMapping<G extends Geohashable> {
 		}
 	}
 
-	public Result match(Geohashable geohashable, Range precision) {
+	public MatchResult match(Geohashable geohashable, Range precision) {
 		String geohash = geohashable.geohash(precision.getMax());
-		Result result = new Result();
+		MatchResult result = new MatchResult();
 		if (geohash != null) {
-			for (int step = precision.getMax(); step >= geohash.length() && step >= precision.getMin(); step--) {
+			int max = precision.getMax() > geohash.length() ? geohash.length() : precision.getMax();
+			int min = precision.getMin() > 0 ? precision.getMin() : 1;
+			for (int step = max; step >= min; step--) {
 				String geohashKey = geohash.substring(0, step);
 				List<G> bucket = mapping.get(geohashKey);
 				if (bucket != null && !bucket.isEmpty()) {
 					G item = bucket.get(0);
-					result = new Result(item, step);
+					result = new MatchResult(item, step);
 					break;
 				}
 			}
@@ -39,20 +43,24 @@ public class GeohashMapping<G extends Geohashable> {
 		return result;
 	}
 
-	public int size() {
-		return mapping.size();
+	public boolean isEmpty() {
+		return mapping.isEmpty();
 	}
 
-	public class Result {
+	public int size() {
+		return (int) mapping.entrySet().stream().map(e -> e.getValue()).flatMap(List::stream).count();
+	}
+
+	public class MatchResult {
 
 		private G item;
 		private final Integer precision;
 
-		public Result() {
+		public MatchResult() {
 			this(null, null);
 		}
 
-		public Result(G item, Integer precision) {
+		public MatchResult(G item, Integer precision) {
 			this.item = item;
 			this.precision = precision;
 		}
