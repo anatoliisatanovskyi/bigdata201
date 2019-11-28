@@ -4,20 +4,22 @@ import java.util.Optional;
 
 public class HotelWeather {
 
+	private String hotelId;
 	private String name;
 	private String country;
 	private String city;
-	private String addres;
+	private String address;
 	private Double avg_tmpr_f;
 	private Double avg_tmpr_c;
 	private String wthr_date;
-	private Integer precision;
+	private Integer geohashPrecision;
 
 	public HotelWeather() {
 	}
 
 	public HotelWeather(Hotel hotel, Weather weather, Integer precision) {
-		this(Optional.ofNullable(hotel).map(Hotel::getName).orElse(null), //
+		this(Optional.ofNullable(hotel).map(Hotel::getId).orElse(null), //
+				Optional.ofNullable(hotel).map(Hotel::getName).orElse(null), //
 				Optional.ofNullable(hotel).map(Hotel::getCountry).orElse(null), //
 				Optional.ofNullable(hotel).map(Hotel::getCity).orElse(null), //
 				Optional.ofNullable(hotel).map(Hotel::getAddress).orElse(null), //
@@ -27,16 +29,25 @@ public class HotelWeather {
 				precision);
 	}
 
-	public HotelWeather(String name, String country, String city, String addres, Double avg_tmpr_f, Double avg_tmpr_c,
-			String wthr_date, Integer precision) {
+	public HotelWeather(String hotelId, String name, String country, String city, String addres, Double avg_tmpr_f,
+			Double avg_tmpr_c, String wthr_date, Integer precision) {
+		this.hotelId = hotelId;
 		this.name = name;
 		this.country = country;
 		this.city = city;
-		this.addres = addres;
+		this.address = addres;
 		this.avg_tmpr_f = avg_tmpr_f;
 		this.avg_tmpr_c = avg_tmpr_c;
 		this.wthr_date = wthr_date;
-		this.precision = precision;
+		this.geohashPrecision = precision;
+	}
+
+	public String getHotelId() {
+		return hotelId;
+	}
+
+	public void setHotelId(String hotelId) {
+		this.hotelId = hotelId;
 	}
 
 	public String getName() {
@@ -63,12 +74,12 @@ public class HotelWeather {
 		this.city = city;
 	}
 
-	public String getAddres() {
-		return addres;
+	public String getAddress() {
+		return address;
 	}
 
-	public void setAddres(String addres) {
-		this.addres = addres;
+	public void setAddress(String address) {
+		this.address = address;
 	}
 
 	public Double getAvg_tmpr_f() {
@@ -95,11 +106,11 @@ public class HotelWeather {
 		this.wthr_date = wthr_date;
 	}
 
-	public Integer getPrecision() {
-		return precision;
+	public Integer getGeohashPrecision() {
+		return geohashPrecision;
 	}
 
-	public void setPrecision(Integer precision) {
-		this.precision = precision;
+	public void setGeohashPrecision(Integer geohashPrecision) {
+		this.geohashPrecision = geohashPrecision;
 	}
 }

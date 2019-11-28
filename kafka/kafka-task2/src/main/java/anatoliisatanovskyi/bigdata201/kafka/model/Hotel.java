@@ -2,11 +2,14 @@ package anatoliisatanovskyi.bigdata201.kafka.model;
 
 import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+
 import anatoliisatanovskyi.bigdata201.commons.Geohash;
 import anatoliisatanovskyi.bigdata201.commons.Geohashable;
 
 public class Hotel implements Geohashable {
 
+	private String id;
 	private String name;
 	private String country;
 	private String city;
@@ -18,8 +21,9 @@ public class Hotel implements Geohashable {
 	public Hotel() {
 	}
 
-	public Hotel(String name, String country, String city, String address, String latitude, String longitude,
+	public Hotel(String id, String name, String country, String city, String address, String latitude, String longitude,
 			String geohash) {
+		this.id = id;
 		this.name = name;
 		this.country = country;
 		this.city = city;
@@ -29,6 +33,21 @@ public class Hotel implements Geohashable {
 		this.geohash = geohash;
 	}
 
+	public boolean notEmpty() {
+		return id != null && name != null && country != null && city != null && address != null && latitude != null
+				&& longitude != null && geohash != null;
+	}
+
+	@JsonGetter("Id")
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	@JsonGetter("Name")
 	public String getName() {
 		return name;
 	}
@@ -37,6 +56,7 @@ public class Hotel implements Geohashable {
 		this.name = name;
 	}
 
+	@JsonGetter("Country")
 	public String getCountry() {
 		return country;
 	}
@@ -45,6 +65,7 @@ public class Hotel implements Geohashable {
 		this.country = country;
 	}
 
+	@JsonGetter("City")
 	public String getCity() {
 		return city;
 	}
@@ -53,6 +74,7 @@ public class Hotel implements Geohashable {
 		this.city = city;
 	}
 
+	@JsonGetter("Address")
 	public String getAddress() {
 		return address;
 	}
@@ -61,6 +83,7 @@ public class Hotel implements Geohashable {
 		this.address = address;
 	}
 
+	@JsonGetter("Latitude")
 	public String getLatitude() {
 		return latitude;
 	}
@@ -69,6 +92,7 @@ public class Hotel implements Geohashable {
 		this.latitude = latitude;
 	}
 
+	@JsonGetter("Longitude")
 	public String getLongitude() {
 		return longitude;
 	}

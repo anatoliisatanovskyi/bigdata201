@@ -66,7 +66,12 @@ public class HotelsWeatherEnricher {
 			ConsumerRecords<byte[], Hotel> records = null;
 			do {
 				records = consumer.poll(Duration.ofSeconds(10));
-				records.forEach(record -> list.add(record.value()));
+				records.forEach(record -> {
+					Hotel item = record.value();
+					if (item.notEmpty()) {
+						list.add(item);
+					}
+				});
 				consumer.commitAsync();
 			} while (records.count() > 0);
 		}
@@ -137,8 +142,13 @@ public class HotelsWeatherEnricher {
 					records = consumer.poll(Duration.ofSeconds(10));
 					records.forEach(record -> {
 						Weather weather = record.value();
+						consumeCounter.incrementAndGet();
+
 						HotelWeather enriched = enrichData(weather);
-						produceData(producer, enriched);
+						if (enriched != null) {
+							produceData(producer, enriched);
+							produceCounter.incrementAndGet();
+						}
 					});
 					consumer.commitAsync();
 				} while (records.count() > 0);
@@ -152,7 +162,11 @@ public class HotelsWeatherEnricher {
 		private HotelWeather enrichData(Weather currWeather) {
 			GeohashMapping<Hotel>.MatchResult matchResult = geohashMapping.match(currWeather,
 					config.general().getGeohashPrecision());
-			return new HotelWeather(matchResult.getItem(), currWeather, matchResult.getPrecision());
+			HotelWeather enriched = null;
+			if (matchResult.getItem() != null) {
+				enriched = new HotelWeather(matchResult.getItem(), currWeather, matchResult.getPrecision());
+			}
+			return enriched;
 		}
 
 		private void produceData(KafkaProducer<byte[], HotelWeather> producer, HotelWeather enriched) {
@@ -163,7 +177,7 @@ public class HotelsWeatherEnricher {
 	}
 
 	private class StatisticsTimer implements Runnable {
-		
+
 		private int currConcumed;
 		private int currProduced;
 
