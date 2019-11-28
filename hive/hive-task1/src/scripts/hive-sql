@@ -1,0 +1,48 @@
+## preparing hive tables
+# connecting external table with hotel weather data backed up by filled kafka topic
+CREATE EXTERNAL TABLE kafka_hotel_weather(hotelId string, name string, country string, city string, address string, avg_tmpr_f DOUBLE, avg_tmpr_c DOUBLE, wthr_date string, geohashPrecision int)
+STORED BY 'org.apache.hadoop.hive.kafka.KafkaStorageHandler'
+TBLPROPERTIES
+  ("kafka.topic" = "kafkaHotelWeather2", "kafka.bootstrap.servers"="sandbox-hdp.hortonworks.com:6667", "kafka.replication-factor"="1", "kafka.partitions"="16");
+
+# connecting external table with expedia data backed by hdfs
+CREATE EXTERNAL TABLE hdfs_expedia(id bigint, date_time string, site_name int, posa_continent int, 
+user_location_country int, user_location_region int, user_location_city int, orig_destination_distance double, 
+user_id int, is_mobile int, is_package int, channel int, srch_ci string, srch_co string, srch_adults_cnt int, 
+srch_children_cnt int, srch_rm_cnt int, srch_destination_id int, srch_destination_type_id int, hotel_id bigint)
+STORED AS AVRO
+LOCATION 'hdfs://sandbox-hdp.hortonworks.com/expedia';
+
+## queries
+# Join hotel/weather table with expedia table via Hive by hotel_id
+SELECT e.*, hw.* from hdfs_expedia e
+JOIN kafka_hotel_weather hw
+ON (e.hotel_id = hw.hotelid);
+
+# Top 10 hotels with max absolute difference variance temperature by month
+SELECT tbl.hotelid,MAX(tbl.tmpr_diff) AS max_monthly_temperature_difference FROM(
+   SELECT hotelid,YEAR(wthr_date),MONTH(wthr_date), MIN(avg_tmpr_c) AS tmpr_min, 
+          MAX(avg_tmpr_c) AS tmpr_max, ROUND(ABS(MAX(avg_tmpr_c) - MIN(avg_tmpr_c)), 2) AS tmpr_diff 
+   FROM kafka_hotel_weather 
+   GROUP BY hotelid, YEAR(wthr_date), MONTH(wthr_date)
+) tbl
+GROUP BY tbl.hotelid
+ORDER BY MAX(tbl.tmpr_diff) DESC
+LIMIT 10;
+
+# Top 10 busy (e.g. with the biggest visits count) hotels for each month. If visit dates refer to several months it should be counted for all affected months.
+SELECT tbl.hotel_id, COUNT(*) as visit_count FROM (
+SELECT hotel_id, MONTH(date_time) as visit_month FROM hdfs_expedia
+) tbl
+GROUP BY tbl.hotel_id
+ORDER BY visit_count DESC
+LIMIT 10;
+
+# For visits with extended stay (more than 7 days) 
+# calculate weather trend (the day temperature difference between last and first day of stay) 
+# and average temperature during stay.
+# TODO:
+SELECT e.*, hw.* from hdfs_expedia e
+JOIN kafka_hotel_weather hw
+ON (e.hotel_id = hw.hotelid)
+WHERE datediff(to_date(e.srch_co), to_date(e.srch_ci)) > 7

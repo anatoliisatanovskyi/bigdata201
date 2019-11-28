@@ -11,5 +11,6 @@
 		<module>hortonworks</module>
 		<module>kafka</module>
 		<module>commons</module>
+		<module>hive</module>
 	</modules>
 </project>
