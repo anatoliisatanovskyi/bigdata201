@@ -1,0 +1,684 @@
+0: jdbc:hive2://sandbox-hdp.hortonworks.com:2> select t1.id, t1.user_id, t1.hotel_id,
+. . . . . . . . . . . . . . . . . . . . . . .> ROUND(AVG(t2.avg_tmpr_c), 1) as avg_tmpr,
+. . . . . . . . . . . . . . . . . . . . . . .> t3.tmpr_diff as tmpr_diff
+. . . . . . . . . . . . . . . . . . . . . . .> FROM (SELECT t.id, t.user_id, t.hotel_id, date_add(t.srch_ci,pe.i) as visit_date
+. . . . . . . . . . . . . . . . . . . . . . .> FROM hdfs_expedia t
+. . . . . . . . . . . . . . . . . . . . . . .> lateral view
+. . . . . . . . . . . . . . . . . . . . . . .> posexplode(split(space(datediff(t.srch_co,t.srch_ci)),' ')) pe as i,x
+. . . . . . . . . . . . . . . . . . . . . . .> WHERE datediff(to_date(t.srch_co), to_date(t.srch_ci)) > 7
+. . . . . . . . . . . . . . . . . . . . . . .> ) t1
+. . . . . . . . . . . . . . . . . . . . . . .> JOIN kafka_hotel_weather t2
+. . . . . . . . . . . . . . . . . . . . . . .> ON t1.hotel_id = t2.hotelid
+. . . . . . . . . . . . . . . . . . . . . . .> AND t1.visit_date = t2.wthr_date
+. . . . . . . . . . . . . . . . . . . . . . .> JOIN (
+. . . . . . . . . . . . . . . . . . . . . . .> SELECT tt1.id, ROUND((tt2.avg_tmpr - tt3.avg_tmpr), 1) as tmpr_diff
+. . . . . . . . . . . . . . . . . . . . . . .> FROM hdfs_expedia tt1
+. . . . . . . . . . . . . . . . . . . . . . .> JOIN hotel_weather tt2
+. . . . . . . . . . . . . . . . . . . . . . .> ON tt1.hotel_id = tt2.hotelid
+. . . . . . . . . . . . . . . . . . . . . . .> AND tt1.srch_co = tt2.wthr_date
+. . . . . . . . . . . . . . . . . . . . . . .> JOIN hotel_weather tt3
+. . . . . . . . . . . . . . . . . . . . . . .> ON tt1.hotel_id = tt3.hotelid
+. . . . . . . . . . . . . . . . . . . . . . .> AND tt1.srch_ci = tt3.wthr_date
+. . . . . . . . . . . . . . . . . . . . . . .> ) t3
+. . . . . . . . . . . . . . . . . . . . . . .> ON t1.id = t3.id
+. . . . . . . . . . . . . . . . . . . . . . .> GROUP BY t1.id,t1.user_id,t1.hotel_id,t3.tmpr_diff;
+INFO  : Compiling command(queryId=hive_20191204134733_a8c77fc1-5b5d-4848-8efd-f60ebb1249ff): select t1.id, t1.user_id, t1.hotel_id,
+ROUND(AVG(t2.avg_tmpr_c), 1) as avg_tmpr,
+t3.tmpr_diff as tmpr_diff
+FROM (SELECT t.id, t.user_id, t.hotel_id, date_add(t.srch_ci,pe.i) as visit_date
+FROM hdfs_expedia t
+lateral view
+posexplode(split(space(datediff(t.srch_co,t.srch_ci)),' ')) pe as i,x
+WHERE datediff(to_date(t.srch_co), to_date(t.srch_ci)) > 7
+) t1
+JOIN kafka_hotel_weather t2
+ON t1.hotel_id = t2.hotelid
+AND t1.visit_date = t2.wthr_date
+JOIN (
+SELECT tt1.id, ROUND((tt2.avg_tmpr - tt3.avg_tmpr), 1) as tmpr_diff
+FROM hdfs_expedia tt1
+JOIN hotel_weather tt2
+ON tt1.hotel_id = tt2.hotelid
+AND tt1.srch_co = tt2.wthr_date
+JOIN hotel_weather tt3
+ON tt1.hotel_id = tt3.hotelid
+AND tt1.srch_ci = tt3.wthr_date
+) t3
+ON t1.id = t3.id
+GROUP BY t1.id,t1.user_id,t1.hotel_id,t3.tmpr_diff
+INFO  : Semantic Analysis Completed (retrial = false)
+INFO  : Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:t1.id, type:bigint, comment:null), FieldSchema(name:t1.user_id, type:int, comment:null), FieldSchema(name:t1.hotel_id, type:bigint, comment:null), FieldSchema(name:avg_tmpr, type:double, comment:null), FieldSchema(name:tmpr_diff, type:double, comment:null)], properties:null)
+INFO  : Completed compiling command(queryId=hive_20191204134733_a8c77fc1-5b5d-4848-8efd-f60ebb1249ff); Time taken: 0.105 seconds
+INFO  : Executing command(queryId=hive_20191204134733_a8c77fc1-5b5d-4848-8efd-f60ebb1249ff): select t1.id, t1.user_id, t1.hotel_id,
+ROUND(AVG(t2.avg_tmpr_c), 1) as avg_tmpr,
+t3.tmpr_diff as tmpr_diff
+FROM (SELECT t.id, t.user_id, t.hotel_id, date_add(t.srch_ci,pe.i) as visit_date
+FROM hdfs_expedia t
+lateral view
+posexplode(split(space(datediff(t.srch_co,t.srch_ci)),' ')) pe as i,x
+WHERE datediff(to_date(t.srch_co), to_date(t.srch_ci)) > 7
+) t1
+JOIN kafka_hotel_weather t2
+ON t1.hotel_id = t2.hotelid
+AND t1.visit_date = t2.wthr_date
+JOIN (
+SELECT tt1.id, ROUND((tt2.avg_tmpr - tt3.avg_tmpr), 1) as tmpr_diff
+FROM hdfs_expedia tt1
+JOIN hotel_weather tt2
+ON tt1.hotel_id = tt2.hotelid
+AND tt1.srch_co = tt2.wthr_date
+JOIN hotel_weather tt3
+ON tt1.hotel_id = tt3.hotelid
+AND tt1.srch_ci = tt3.wthr_date
+) t3
+ON t1.id = t3.id
+GROUP BY t1.id,t1.user_id,t1.hotel_id,t3.tmpr_diff
+INFO  : Query ID = hive_20191204134733_a8c77fc1-5b5d-4848-8efd-f60ebb1249ff
+INFO  : Total jobs = 1
+INFO  : Launching Job 1 out of 1
+INFO  : Starting task [Stage-1:MAPRED] in serial mode
+INFO  : Subscribed to counters: [] for queryId: hive_20191204134733_a8c77fc1-5b5d-4848-8efd-f60ebb1249ff
+INFO  : Session is already open
+INFO  : Dag name: select t1.id, t1.user...otel_id,t3.tmpr_diff (Stage-1)
+INFO  : Setting tez.task.scale.memory.reserve-fraction to 0.30000001192092896
+INFO  : Setting tez.task.scale.memory.reserve-fraction to 0.30000001192092896
+INFO  : Setting tez.task.scale.memory.reserve-fraction to 0.30000001192092896
+INFO  : Status: Running (Executing on YARN cluster with App id application_1575464025291_0001)
+
+----------------------------------------------------------------------------------------------
+        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED
+----------------------------------------------------------------------------------------------
+Map 7 .......... container     SUCCEEDED      1          1        0        0       0       0
+Map 1 .......... container     SUCCEEDED      4          4        0        0       0       0
+Map 5 .......... container     SUCCEEDED      1          1        0        0       0       0
+Map 6 .......... container     SUCCEEDED      1          1        0        0       0       0
+Map 4 .......... container     SUCCEEDED      4          4        0        0       0       0
+Reducer 2 ...... container     SUCCEEDED     80         80        0        0       1       0
+Reducer 3 ...... container     SUCCEEDED      7          7        0        0       1       0
+----------------------------------------------------------------------------------------------
+VERTICES: 07/07  [==========================>>] 100%  ELAPSED TIME: 63.30 s
+----------------------------------------------------------------------------------------------
+INFO  : Status: DAG finished successfully in 63.27 seconds
+INFO  :
+INFO  : Query Execution Summary
+INFO  : ----------------------------------------------------------------------------------------------
+INFO  : OPERATION                            DURATION
+INFO  : ----------------------------------------------------------------------------------------------
+INFO  : Compile Query                           0.10s
+INFO  : Prepare Plan                            0.14s
+INFO  : Get Query Coordinator (AM)              0.00s
+INFO  : Submit Plan                             0.04s
+INFO  : Start DAG                               0.55s
+INFO  : Run DAG                                63.27s
+INFO  : ----------------------------------------------------------------------------------------------
+INFO  :
+INFO  : Task Execution Summary
+INFO  : ----------------------------------------------------------------------------------------------
+INFO  :   VERTICES      DURATION(ms)   CPU_TIME(ms)    GC_TIME(ms)   INPUT_RECORDS   OUTPUT_RECORDS
+INFO  : ----------------------------------------------------------------------------------------------
+INFO  :      Map 1          23704.00         52,360          2,247       4,077,605        8,394,216
+INFO  :      Map 4          22709.00         51,390          2,701       2,536,191           31,169
+INFO  :      Map 5           2014.00          4,680            144          10,098           10,098
+INFO  :      Map 6            503.00            580             26          10,098           10,098
+INFO  :      Map 7          14120.00         26,100          1,687       1,549,363        1,549,363
+INFO  :  Reducer 2          18745.00         46,300          1,570       4,213,014            4,872
+INFO  :  Reducer 3           3165.00          6,350            127             245                0
+INFO  : ----------------------------------------------------------------------------------------------
+INFO  :
+INFO  : org.apache.tez.common.counters.DAGCounter:
+INFO  :    NUM_FAILED_TASKS: 2
+INFO  :    NUM_SUCCEEDED_TASKS: 98
+INFO  :    TOTAL_LAUNCHED_TASKS: 99
+INFO  :    AM_CPU_MILLISECONDS: 2550
+INFO  :    AM_GC_TIME_MILLIS: 32
+INFO  : File System Counters:
+INFO  :    FILE_BYTES_READ: 98984310
+INFO  :    FILE_BYTES_WRITTEN: 31616955
+INFO  :    HDFS_BYTES_READ: 276694818
+INFO  :    HDFS_BYTES_WRITTEN: 12716
+INFO  :    HDFS_READ_OPS: 145
+INFO  :    HDFS_WRITE_OPS: 14
+INFO  :    HDFS_OP_CREATE: 7
+INFO  :    HDFS_OP_GET_FILE_STATUS: 71
+INFO  :    HDFS_OP_OPEN: 74
+INFO  :    HDFS_OP_RENAME: 7
+INFO  : org.apache.tez.common.counters.TaskCounter:
+INFO  :    REDUCE_INPUT_GROUPS: 245
+INFO  :    REDUCE_INPUT_RECORDS: 245
+INFO  :    COMBINE_INPUT_RECORDS: 0
+INFO  :    SPILLED_RECORDS: 2584811
+INFO  :    NUM_SHUFFLED_INPUTS: 878
+INFO  :    NUM_SKIPPED_INPUTS: 4248
+INFO  :    NUM_FAILED_SHUFFLE_INPUTS: 0
+INFO  :    MERGED_MAP_OUTPUTS: 232
+INFO  :    GC_TIME_MILLIS: 8502
+INFO  :    TASK_DURATION_MILLIS: 116823
+INFO  :    CPU_MILLISECONDS: 187760
+INFO  :    PHYSICAL_MEMORY_BYTES: 81323360256
+INFO  :    VIRTUAL_MEMORY_BYTES: 265404502016
+INFO  :    COMMITTED_HEAP_BYTES: 81323360256
+INFO  :    INPUT_RECORDS_PROCESSED: 12410154
+INFO  :    INPUT_SPLIT_LENGTH_BYTES: 276198754
+INFO  :    OUTPUT_RECORDS: 5782818
+INFO  :    OUTPUT_LARGE_RECORDS: 0
+INFO  :    OUTPUT_BYTES: 159003096
+INFO  :    OUTPUT_BYTES_WITH_OVERHEAD: 223464721
+INFO  :    OUTPUT_BYTES_PHYSICAL: 23231210
+INFO  :    ADDITIONAL_SPILLS_BYTES_WRITTEN: 8277497
+INFO  :    ADDITIONAL_SPILLS_BYTES_READ: 8293778
+INFO  :    ADDITIONAL_SPILL_COUNT: 3
+INFO  :    SHUFFLE_CHUNK_COUNT: 80
+INFO  :    SHUFFLE_BYTES: 32796503
+INFO  :    SHUFFLE_BYTES_DECOMPRESSED: 209954347
+INFO  :    SHUFFLE_BYTES_TO_MEM: 0
+INFO  :    SHUFFLE_BYTES_TO_DISK: 0
+INFO  :    SHUFFLE_BYTES_DISK_DIRECT: 32796503
+INFO  :    NUM_MEM_TO_DISK_MERGES: 0
+INFO  :    NUM_DISK_TO_DISK_MERGES: 0
+INFO  :    SHUFFLE_PHASE_TIME: 12271
+INFO  :    MERGE_PHASE_TIME: 707
+INFO  :    FIRST_EVENT_RECEIVED: 1640
+INFO  :    LAST_EVENT_RECEIVED: 10833
+INFO  : HIVE:
+INFO  :    CREATED_FILES: 7
+INFO  :    DESERIALIZE_ERRORS: 0
+INFO  :    RECORDS_IN_Map_1: 2528242
+INFO  :    RECORDS_IN_Map_4: 2515995
+INFO  :    RECORDS_IN_Map_5: 10098
+INFO  :    RECORDS_IN_Map_6: 10098
+INFO  :    RECORDS_IN_Map_7: 1549363
+INFO  :    RECORDS_OUT_0: 245
+INFO  :    RECORDS_OUT_INTERMEDIATE_Map_1: 8394216
+INFO  :    RECORDS_OUT_INTERMEDIATE_Map_4: 31169
+INFO  :    RECORDS_OUT_INTERMEDIATE_Map_5: 10098
+INFO  :    RECORDS_OUT_INTERMEDIATE_Map_6: 10098
+INFO  :    RECORDS_OUT_INTERMEDIATE_Map_7: 1549363
+INFO  :    RECORDS_OUT_INTERMEDIATE_Reducer_2: 4872
+INFO  :    RECORDS_OUT_INTERMEDIATE_Reducer_3: 0
+INFO  :    RECORDS_OUT_OPERATOR_FIL_53: 1382502
+INFO  :    RECORDS_OUT_OPERATOR_FIL_54: 55830
+INFO  :    RECORDS_OUT_OPERATOR_FIL_72: 1549363
+INFO  :    RECORDS_OUT_OPERATOR_FIL_75: 10098
+INFO  :    RECORDS_OUT_OPERATOR_FIL_77: 10098
+INFO  :    RECORDS_OUT_OPERATOR_FIL_79: 2528221
+INFO  :    RECORDS_OUT_OPERATOR_FS_89: 245
+INFO  :    RECORDS_OUT_OPERATOR_GBY_85: 245
+INFO  :    RECORDS_OUT_OPERATOR_GBY_87: 245
+INFO  :    RECORDS_OUT_OPERATOR_LVF_1: 55830
+INFO  :    RECORDS_OUT_OPERATOR_LVJ_5: 1382502
+INFO  :    RECORDS_OUT_OPERATOR_MAPJOIN_66: 8394216
+INFO  :    RECORDS_OUT_OPERATOR_MAPJOIN_80: 103574
+INFO  :    RECORDS_OUT_OPERATOR_MAPJOIN_81: 15906
+INFO  :    RECORDS_OUT_OPERATOR_MAPJOIN_84: 104193
+INFO  :    RECORDS_OUT_OPERATOR_MAP_0: 0
+INFO  :    RECORDS_OUT_OPERATOR_RS_29: 8394216
+INFO  :    RECORDS_OUT_OPERATOR_RS_73: 1549363
+INFO  :    RECORDS_OUT_OPERATOR_RS_76: 10098
+INFO  :    RECORDS_OUT_OPERATOR_RS_78: 10098
+INFO  :    RECORDS_OUT_OPERATOR_RS_83: 31169
+INFO  :    RECORDS_OUT_OPERATOR_RS_86: 4872
+INFO  :    RECORDS_OUT_OPERATOR_SEL_2: 55830
+INFO  :    RECORDS_OUT_OPERATOR_SEL_3: 55830
+INFO  :    RECORDS_OUT_OPERATOR_SEL_7: 1382502
+INFO  :    RECORDS_OUT_OPERATOR_SEL_82: 15906
+INFO  :    RECORDS_OUT_OPERATOR_SEL_88: 245
+INFO  :    RECORDS_OUT_OPERATOR_TS_0: 2528242
+INFO  :    RECORDS_OUT_OPERATOR_TS_10: 10098
+INFO  :    RECORDS_OUT_OPERATOR_TS_22: 1549363
+INFO  :    RECORDS_OUT_OPERATOR_TS_8: 2528242
+INFO  :    RECORDS_OUT_OPERATOR_TS_9: 10098
+INFO  :    RECORDS_OUT_OPERATOR_UDTF_4: 691251
+INFO  : Shuffle Errors:
+INFO  :    BAD_ID: 0
+INFO  :    CONNECTION: 0
+INFO  :    IO_ERROR: 0
+INFO  :    WRONG_LENGTH: 0
+INFO  :    WRONG_MAP: 0
+INFO  :    WRONG_REDUCE: 0
+INFO  : Shuffle Errors_Reducer_3_INPUT_Reducer_2:
+INFO  :    BAD_ID: 0
+INFO  :    CONNECTION: 0
+INFO  :    IO_ERROR: 0
+INFO  :    WRONG_LENGTH: 0
+INFO  :    WRONG_MAP: 0
+INFO  :    WRONG_REDUCE: 0
+INFO  : TaskCounter_Map_1_INPUT_Map_7:
+INFO  :    FIRST_EVENT_RECEIVED: 28
+INFO  :    INPUT_RECORDS_PROCESSED: 3098726
+INFO  :    LAST_EVENT_RECEIVED: 28
+INFO  :    NUM_FAILED_SHUFFLE_INPUTS: 0
+INFO  :    NUM_SHUFFLED_INPUTS: 2
+INFO  :    SHUFFLE_BYTES: 18760106
+INFO  :    SHUFFLE_BYTES_DECOMPRESSED: 77468162
+INFO  :    SHUFFLE_BYTES_DISK_DIRECT: 18760106
+INFO  :    SHUFFLE_BYTES_TO_DISK: 0
+INFO  :    SHUFFLE_BYTES_TO_MEM: 0
+INFO  :    SHUFFLE_PHASE_TIME: 56
+INFO  : TaskCounter_Map_1_INPUT_t:
+INFO  :    INPUT_RECORDS_PROCESSED: 2528242
+INFO  :    INPUT_SPLIT_LENGTH_BYTES: 137986171
+INFO  : TaskCounter_Map_1_OUTPUT_Reducer_2:
+INFO  :    ADDITIONAL_SPILLS_BYTES_READ: 8277497
+INFO  :    ADDITIONAL_SPILLS_BYTES_WRITTEN: 8277497
+INFO  :    ADDITIONAL_SPILL_COUNT: 3
+INFO  :    OUTPUT_BYTES: 122463633
+INFO  :    OUTPUT_BYTES_PHYSICAL: 13464057
+INFO  :    OUTPUT_BYTES_WITH_OVERHEAD: 183561564
+INFO  :    OUTPUT_LARGE_RECORDS: 0
+INFO  :    OUTPUT_RECORDS: 4197108
+INFO  :    SPILLED_RECORDS: 2584321
+INFO  : TaskCounter_Map_4_INPUT_Map_5:
+INFO  :    FIRST_EVENT_RECEIVED: 71
+INFO  :    INPUT_RECORDS_PROCESSED: 20196
+INFO  :    LAST_EVENT_RECEIVED: 71
+INFO  :    NUM_FAILED_SHUFFLE_INPUTS: 0
+INFO  :    NUM_SHUFFLED_INPUTS: 2
+INFO  :    SHUFFLE_BYTES: 200672
+INFO  :    SHUFFLE_BYTES_DECOMPRESSED: 646284
+INFO  :    SHUFFLE_BYTES_DISK_DIRECT: 200672
+INFO  :    SHUFFLE_BYTES_TO_DISK: 0
+INFO  :    SHUFFLE_BYTES_TO_MEM: 0
+INFO  :    SHUFFLE_PHASE_TIME: 135
+INFO  : TaskCounter_Map_4_INPUT_Map_6:
+INFO  :    FIRST_EVENT_RECEIVED: 70
+INFO  :    INPUT_RECORDS_PROCESSED: 20196
+INFO  :    LAST_EVENT_RECEIVED: 70
+INFO  :    NUM_FAILED_SHUFFLE_INPUTS: 0
+INFO  :    NUM_SHUFFLED_INPUTS: 2
+INFO  :    SHUFFLE_BYTES: 200672
+INFO  :    SHUFFLE_BYTES_DECOMPRESSED: 646284
+INFO  :    SHUFFLE_BYTES_DISK_DIRECT: 200672
+INFO  :    SHUFFLE_BYTES_TO_DISK: 0
+INFO  :    SHUFFLE_BYTES_TO_MEM: 0
+INFO  :    SHUFFLE_PHASE_TIME: 116
+INFO  : TaskCounter_Map_4_INPUT_tt1:
+INFO  :    INPUT_RECORDS_PROCESSED: 2528242
+INFO  :    INPUT_SPLIT_LENGTH_BYTES: 137986171
+INFO  : TaskCounter_Map_4_OUTPUT_Reducer_2:
+INFO  :    ADDITIONAL_SPILLS_BYTES_READ: 0
+INFO  :    ADDITIONAL_SPILLS_BYTES_WRITTEN: 0
+INFO  :    ADDITIONAL_SPILL_COUNT: 0
+INFO  :    OUTPUT_BYTES: 286308
+INFO  :    OUTPUT_BYTES_PHYSICAL: 170075
+INFO  :    OUTPUT_BYTES_WITH_OVERHEAD: 508984
+INFO  :    OUTPUT_LARGE_RECORDS: 0
+INFO  :    OUTPUT_RECORDS: 15906
+INFO  :    SPILLED_RECORDS: 0
+INFO  : TaskCounter_Map_5_INPUT_tt2:
+INFO  :    INPUT_RECORDS_PROCESSED: 12
+INFO  :    INPUT_SPLIT_LENGTH_BYTES: 113255
+INFO  : TaskCounter_Map_5_OUTPUT_Map_4:
+INFO  :    ADDITIONAL_SPILLS_BYTES_READ: 0
+INFO  :    ADDITIONAL_SPILLS_BYTES_WRITTEN: 0
+INFO  :    ADDITIONAL_SPILL_COUNT: 0
+INFO  :    OUTPUT_BYTES: 302940
+INFO  :    OUTPUT_BYTES_PHYSICAL: 100360
+INFO  :    OUTPUT_BYTES_WITH_OVERHEAD: 323142
+INFO  :    OUTPUT_LARGE_RECORDS: 0
+INFO  :    OUTPUT_RECORDS: 10098
+INFO  :    SPILLED_RECORDS: 0
+INFO  : TaskCounter_Map_6_INPUT_tt3:
+INFO  :    INPUT_RECORDS_PROCESSED: 12
+INFO  :    INPUT_SPLIT_LENGTH_BYTES: 113157
+INFO  : TaskCounter_Map_6_OUTPUT_Map_4:
+INFO  :    ADDITIONAL_SPILLS_BYTES_READ: 0
+INFO  :    ADDITIONAL_SPILLS_BYTES_WRITTEN: 0
+INFO  :    ADDITIONAL_SPILL_COUNT: 0
+INFO  :    OUTPUT_BYTES: 302940
+INFO  :    OUTPUT_BYTES_PHYSICAL: 100360
+INFO  :    OUTPUT_BYTES_WITH_OVERHEAD: 323142
+INFO  :    OUTPUT_LARGE_RECORDS: 0
+INFO  :    OUTPUT_RECORDS: 10098
+INFO  :    SPILLED_RECORDS: 0
+INFO  : TaskCounter_Map_7_INPUT_t2:
+INFO  :    INPUT_RECORDS_PROCESSED: 1514
+INFO  :    INPUT_SPLIT_LENGTH_BYTES: 0
+INFO  : TaskCounter_Map_7_OUTPUT_Map_1:
+INFO  :    ADDITIONAL_SPILLS_BYTES_READ: 0
+INFO  :    ADDITIONAL_SPILLS_BYTES_WRITTEN: 0
+INFO  :    ADDITIONAL_SPILL_COUNT: 0
+INFO  :    OUTPUT_BYTES: 35635349
+INFO  :    OUTPUT_BYTES_PHYSICAL: 9380077
+INFO  :    OUTPUT_BYTES_WITH_OVERHEAD: 38734081
+INFO  :    OUTPUT_LARGE_RECORDS: 0
+INFO  :    OUTPUT_RECORDS: 1549363
+INFO  :    SPILLED_RECORDS: 0
+INFO  : TaskCounter_Reducer_2_INPUT_Map_1:
+INFO  :    FIRST_EVENT_RECEIVED: 976
+INFO  :    INPUT_RECORDS_PROCESSED: 4197108
+INFO  :    LAST_EVENT_RECEIVED: 9612
+INFO  :    NUM_FAILED_SHUFFLE_INPUTS: 0
+INFO  :    NUM_SHUFFLED_INPUTS: 320
+INFO  :    SHUFFLE_BYTES: 13456377
+INFO  :    SHUFFLE_BYTES_DECOMPRESSED: 130859769
+INFO  :    SHUFFLE_BYTES_DISK_DIRECT: 13456377
+INFO  :    SHUFFLE_BYTES_TO_DISK: 0
+INFO  :    SHUFFLE_BYTES_TO_MEM: 0
+INFO  :    SHUFFLE_PHASE_TIME: 10280
+INFO  : TaskCounter_Reducer_2_INPUT_Map_4:
+INFO  :    FIRST_EVENT_RECEIVED: 420
+INFO  :    INPUT_RECORDS_PROCESSED: 15906
+INFO  :    LAST_EVENT_RECEIVED: 607
+INFO  :    NUM_FAILED_SHUFFLE_INPUTS: 0
+INFO  :    NUM_SHUFFLED_INPUTS: 320
+INFO  :    SHUFFLE_BYTES: 162395
+INFO  :    SHUFFLE_BYTES_DECOMPRESSED: 320040
+INFO  :    SHUFFLE_BYTES_DISK_DIRECT: 162395
+INFO  :    SHUFFLE_BYTES_TO_DISK: 0
+INFO  :    SHUFFLE_BYTES_TO_MEM: 0
+INFO  :    SHUFFLE_PHASE_TIME: 1183
+INFO  : TaskCounter_Reducer_2_OUTPUT_Reducer_3:
+INFO  :    ADDITIONAL_SPILLS_BYTES_READ: 0
+INFO  :    ADDITIONAL_SPILLS_BYTES_WRITTEN: 0
+INFO  :    ADDITIONAL_SPILL_COUNT: 0
+INFO  :    OUTPUT_BYTES: 11926
+INFO  :    OUTPUT_BYTES_PHYSICAL: 16281
+INFO  :    OUTPUT_BYTES_WITH_OVERHEAD: 13808
+INFO  :    OUTPUT_LARGE_RECORDS: 0
+INFO  :    OUTPUT_RECORDS: 245
+INFO  :    SHUFFLE_CHUNK_COUNT: 80
+INFO  :    SPILLED_RECORDS: 245
+INFO  : TaskCounter_Reducer_3_INPUT_Reducer_2:
+INFO  :    ADDITIONAL_SPILLS_BYTES_READ: 16281
+INFO  :    ADDITIONAL_SPILLS_BYTES_WRITTEN: 0
+INFO  :    COMBINE_INPUT_RECORDS: 0
+INFO  :    FIRST_EVENT_RECEIVED: 75
+INFO  :    LAST_EVENT_RECEIVED: 445
+INFO  :    MERGED_MAP_OUTPUTS: 232
+INFO  :    MERGE_PHASE_TIME: 707
+INFO  :    NUM_DISK_TO_DISK_MERGES: 0
+INFO  :    NUM_FAILED_SHUFFLE_INPUTS: 0
+INFO  :    NUM_MEM_TO_DISK_MERGES: 0
+INFO  :    NUM_SHUFFLED_INPUTS: 232
+INFO  :    NUM_SKIPPED_INPUTS: 4248
+INFO  :    REDUCE_INPUT_GROUPS: 245
+INFO  :    REDUCE_INPUT_RECORDS: 245
+INFO  :    SHUFFLE_BYTES: 16281
+INFO  :    SHUFFLE_BYTES_DECOMPRESSED: 13808
+INFO  :    SHUFFLE_BYTES_DISK_DIRECT: 16281
+INFO  :    SHUFFLE_BYTES_TO_DISK: 0
+INFO  :    SHUFFLE_BYTES_TO_MEM: 0
+INFO  :    SHUFFLE_PHASE_TIME: 501
+INFO  :    SPILLED_RECORDS: 245
+INFO  : TaskCounter_Reducer_3_OUTPUT_out_Reducer_3:
+INFO  :    OUTPUT_RECORDS: 0
+INFO  : org.apache.hadoop.hive.ql.exec.tez.HiveInputCounters:
+INFO  :    GROUPED_INPUT_SPLITS_Map_1: 4
+INFO  :    GROUPED_INPUT_SPLITS_Map_4: 4
+INFO  :    GROUPED_INPUT_SPLITS_Map_5: 1
+INFO  :    GROUPED_INPUT_SPLITS_Map_6: 1
+INFO  :    GROUPED_INPUT_SPLITS_Map_7: 1
+INFO  :    INPUT_DIRECTORIES_Map_1: 1
+INFO  :    INPUT_DIRECTORIES_Map_4: 1
+INFO  :    INPUT_DIRECTORIES_Map_5: 3
+INFO  :    INPUT_DIRECTORIES_Map_6: 3
+INFO  :    INPUT_DIRECTORIES_Map_7: 1
+INFO  :    INPUT_FILES_Map_1: 25
+INFO  :    INPUT_FILES_Map_4: 25
+INFO  :    INPUT_FILES_Map_5: 6
+INFO  :    INPUT_FILES_Map_6: 6
+INFO  :    INPUT_FILES_Map_7: 1
+INFO  :    RAW_INPUT_SPLITS_Map_1: 25
+INFO  :    RAW_INPUT_SPLITS_Map_4: 25
+INFO  :    RAW_INPUT_SPLITS_Map_5: 6
+INFO  :    RAW_INPUT_SPLITS_Map_6: 6
+INFO  :    RAW_INPUT_SPLITS_Map_7: 1
+INFO  : Completed executing command(queryId=hive_20191204134733_a8c77fc1-5b5d-4848-8efd-f60ebb1249ff); Time taken: 63.998 seconds
+INFO  : OK
++----------+-------------+----------------+-----------+------------+
+|  t1.id   | t1.user_id  |  t1.hotel_id   | avg_tmpr  | tmpr_diff  |
++----------+-------------+----------------+-----------+------------+
+| 11856    | 39702       | 652835028999   | 19.7      | -1.0       |
+| 76310    | 254012      | 1297080123393  | 26.3      | 4.4        |
+| 117707   | 391891      | 1305670057985  | 25.8      | -1.0       |
+| 153847   | 513086      | 180388626435   | 24.4      | 0.1        |
+| 166558   | 555980      | 764504178689   | 20.0      | 1.4        |
+| 215204   | 718410      | 377957122051   | 19.9      | 0.7        |
+| 350066   | 1162931     | 1099511627778  | 22.7      | -1.5       |
+| 465339   | 345668      | 695784701952   | 18.7      | -3.0       |
+| 467188   | 351875      | 266287972354   | 27.4      | 0.4        |
+| 506273   | 480127      | 764504178689   | 19.9      | 1.0        |
+| 516980   | 516216      | 936302870529   | 22.2      | -9.3       |
+| 664363   | 1007024     | 1159641169921  | 20.8      | -10.5      |
+| 667440   | 1016099     | 1305670057987  | 20.2      | 1.1        |
+| 671466   | 1029307     | 42949672965    | 24.6      | -1.9       |
+| 690383   | 1090737     | 1348619730949  | 22.2      | -6.7       |
+| 720429   | 1189347     | 927712935938   | 18.4      | -1.5       |
+| 810527   | 294298      | 171798691841   | 21.0      | 1.4        |
+| 880181   | 528550      | 1460288880642  | 5.9       | -3.5       |
+| 881016   | 531494      | 1348619730947  | 16.6      | -6.1       |
+| 961127   | 800776      | 438086664195   | 12.8      | -2.5       |
+| 1004808  | 947666      | 1039382085634  | 19.8      | 0.1        |
+| 1014567  | 979226      | 1494648619010  | 16.1      | 2.6        |
+| 1075650  | 1175759     | 755914244099   | 14.6      | 9.2        |
+| 1092660  | 32407       | 1151051235329  | 16.3      | -5.4       |
+| 1156773  | 246463      | 472446402561   | 5.5       | -9.7       |
+| 1252957  | 566746      | 1571958030339  | 9.4       | -2.9       |
+| 1298181  | 719155      | 1185410973699  | 16.4      | -6.8       |
+| 1317383  | 783514      | 1434519076866  | 16.1      | -2.7       |
+| 1387247  | 1013797     | 1133871366145  | 16.9      | -7.0       |
+| 1504928  | 197499      | 764504178689   | 22.5      | -0.8       |
+| 1705201  | 862512      | 841813590016   | 16.5      | -11.5      |
+| 1833460  | 89993       | 403726925824   | 17.6      | -5.1       |
+| 1971249  | 549176      | 300647710725   | 22.9      | 10.1       |
+| 2072974  | 888803      | 1580547964929  | 21.5      | -4.0       |
+| 2097537  | 969523      | 1202590842883  | 26.5      | 2.3        |
+| 2129721  | 1072580     | 1005022347271  | 12.4      | 6.3        |
+| 2145413  | 1124636     | 730144440325   | 21.2      | -2.2       |
+| 2232544  | 215437      | 1374389534721  | 22.6      | -3.2       |
+| 2269937  | 344180      | 266287972353   | 13.2      | -4.3       |
+| 2273877  | 357184      | 128849018888   | 15.4      | 10.5       |
+| 2277525  | 369884      | 858993459206   | 17.4      | -4.3       |
+| 2320186  | 510856      | 1477468749830  | 27.2      | 0.3        |
+| 2386428  | 729630      | 420906795009   | 25.2      | -10.1      |
+| 2442029  | 914948      | 1211180777475  | 10.8      | 9.3        |
+| 2445104  | 925758      | 137438953477   | 21.1      | -11.8      |
+| 2488869  | 1069845     | 1649267441664  | 23.0      | -2.0       |
+| 2524434  | 1187351     | 541165879298   | 22.6      | 1.2        |
+| 176898   | 591967      | 833223655424   | 21.9      | -7.0       |
+| 201352   | 674382      | 317827579905   | 18.2      | -3.9       |
+| 250324   | 836485      | 1116691496962  | 11.3      | -4.4       |
+| 302773   | 1010169     | 1013612281864  | 18.2      | -3.4       |
+| 345629   | 1149089     | 816043786243   | 3.6       | -6.2       |
+| 436146   | 248714      | 747324309509   | 14.0      | -5.0       |
+| 623643   | 871212      | 1176821039104  | 18.7      | -2.1       |
+| 684006   | 1069831     | 1425929142277  | 19.1      | -10.0      |
+| 699641   | 1122105     | 438086664195   | 16.6      | -5.0       |
+| 765177   | 140840      | 901943132161   | 21.4      | 3.9        |
+| 787908   | 216939      | 360777252867   | 24.2      | -0.1       |
+| 812399   | 300852      | 412316860416   | 26.6      | -1.5       |
+| 839462   | 391514      | 206158430209   | 19.6      | -2.0       |
+| 847110   | 417325      | 1142461300737  | 13.2      | 9.3        |
+| 944496   | 743474      | 438086664193   | 10.5      | -9.4       |
+| 966871   | 819343      | 1005022347264  | 11.8      | -1.3       |
+| 994356   | 910442      | 1494648619010  | 16.4      | 3.0        |
+| 1011318  | 969110      | 335007449088   | 17.1      | -5.6       |
+| 1139755  | 191829      | 1460288880642  | 9.4       | -4.4       |
+| 1322533  | 801447      | 292057776128   | 11.0      | -11.4      |
+| 1346906  | 881808      | 489626271744   | 28.5      | 3.2        |
+| 1519690  | 244657      | 343597383682   | 23.0      | 0.2        |
+| 1670225  | 748671      | 1322849927170  | 19.9      | -1.4       |
+| 1762914  | 1054322     | 77309411333    | 20.4      | -3.2       |
+| 1776908  | 1100194     | 1159641169921  | 15.9      | -1.7       |
+| 1776909  | 1100194     | 798863917059   | 20.9      | 2.4        |
+| 1797772  | 1168494     | 704374636545   | 22.3      | 11.7       |
+| 1841288  | 116354      | 661424963589   | 18.2      | -7.3       |
+| 1997527  | 638397      | 223338299395   | 8.7       | 3.4        |
+| 2095211  | 963182      | 1546188226562  | 27.2      | -5.3       |
+| 2095212  | 963182      | 1700807049218  | 20.3      | -5.1       |
+| 2173912  | 17937       | 824633720833   | 24.7      | -5.2       |
+| 38411    | 129063      | 1614907703296  | 9.9       | 1.1        |
+| 46980    | 157662      | 85899345921    | 14.1      | 0.1        |
+| 65402    | 219131      | 1322849927169  | 21.5      | -1.3       |
+| 97289    | 323904      | 1417339207689  | 23.9      | 6.4        |
+| 315541   | 1050304     | 326417514496   | 22.5      | 9.7        |
+| 341246   | 1134997     | 223338299395   | 8.5       | -0.4       |
+| 403252   | 139404      | 1443109011456  | 22.8      | 0.5        |
+| 508147   | 486597      | 790273982465   | 26.7      | -2.0       |
+| 627433   | 883998      | 1211180777475  | 10.8      | 9.3        |
+| 782384   | 198786      | 1331439861761  | 22.6      | 0.2        |
+| 786373   | 212094      | 1185410973697  | 20.4      | -8.0       |
+| 793017   | 233735      | 1142461300737  | 18.4      | 0.5        |
+| 793980   | 236922      | 489626271750   | 20.7      | 0.8        |
+| 878336   | 522855      | 618475290627   | 18.4      | 8.6        |
+| 904530   | 609882      | 1271310319616  | 25.6      | 3.1        |
+| 914950   | 644224      | 747324309509   | 20.9      | -1.0       |
+| 1164766  | 272649      | 77309411328    | 14.0      | -12.5      |
+| 1289728  | 689353      | 730144440322   | 16.6      | -6.8       |
+| 1328095  | 820285      | 910533066755   | 12.1      | 4.0        |
+| 1379064  | 988638      | 1348619730950  | 20.0      | -4.4       |
+| 1380630  | 993142      | 944892805123   | 25.8      | -0.9       |
++----------+-------------+----------------+-----------+------------+
+|  t1.id   | t1.user_id  |  t1.hotel_id   | avg_tmpr  | tmpr_diff  |
++----------+-------------+----------------+-----------+------------+
+| 1560909  | 384843      | 721554505728   | 10.8      | 10.4       |
+| 1617390  | 574241      | 412316860418   | 10.1      | -4.5       |
+| 1653047  | 690655      | 661424963588   | 24.2      | -1.5       |
+| 1653477  | 692035      | 1580547964929  | 11.5      | -4.6       |
+| 1701611  | 850807      | 103079215107   | 15.4      | 1.9        |
+| 1750238  | 1012920     | 438086664193   | 15.0      | -12.5      |
+| 1864931  | 194839      | 120259084288   | 6.1       | -7.5       |
+| 1887065  | 268289      | 317827579904   | 18.0      | -3.2       |
+| 1908520  | 341060      | 652835028996   | 25.7      | -1.2       |
+| 1908948  | 342356      | 704374636546   | 11.5      | -3.2       |
+| 1952617  | 486960      | 541165879298   | 17.9      | 9.8        |
+| 1964221  | 525189      | 103079215105   | 26.5      | -1.5       |
+| 2084208  | 925185      | 1425929142272  | 18.8      | -0.1       |
+| 2101988  | 983392      | 103079215107   | 17.1      | -3.0       |
+| 2163231  | 1181480     | 1159641169920  | 22.5      | 1.5        |
+| 2205724  | 124894      | 77309411329    | 19.5      | -4.0       |
+| 2225476  | 191381      | 85899345926    | 23.0      | 0.9        |
+| 2340317  | 579888      | 1056561954818  | 22.1      | -8.7       |
+| 2465222  | 992496      | 1013612281862  | 18.4      | -2.7       |
+| 3393     | 11588       | 438086664192   | 20.2      | 1.4        |
+| 8769     | 28729       | 300647710724   | 25.1      | 3.9        |
+| 18721    | 63479       | 257698037761   | 17.5      | -5.3       |
+| 86755    | 289533      | 970662608903   | 24.9      | 0.5        |
+| 140198   | 467448      | 807453851651   | 9.9       | 4.3        |
+| 171124   | 571668      | 816043786244   | 26.1      | 3.4        |
+| 246736   | 824839      | 566935683074   | 11.7      | -9.3       |
+| 576651   | 714566      | 1425929142274  | 32.4      | -0.6       |
+| 788490   | 218619      | 85899345923    | 13.4      | -6.2       |
+| 841115   | 396846      | 1030792151040  | 16.8      | -9.8       |
+| 857066   | 451606      | 858993459208   | 17.9      | -2.9       |
+| 1040000  | 1060149     | 369367187460   | 19.4      | 0.2        |
+| 1133712  | 172198      | 60129542148    | 16.8      | -2.9       |
+| 1418625  | 1114647     | 1236950581251  | 9.6       | 12.1       |
+| 1439016  | 1180746     | 1073741824001  | 19.2      | -9.2       |
+| 1445402  | 1602        | 1202590842888  | 27.7      | 9.8        |
+| 1463041  | 60878       | 85899345921    | 12.1      | -3.5       |
+| 1606672  | 538408      | 704374636545   | 27.2      | 0.9        |
+| 1645053  | 664701      | 1039382085634  | 25.7      | -5.1       |
+| 1652443  | 688488      | 472446402562   | 19.7      | -3.9       |
+| 1722288  | 919952      | 1168231104512  | 26.2      | -3.8       |
+| 1745091  | 995900      | 1236950581251  | 19.1      | 5.7        |
+| 1917902  | 371710      | 489626271745   | 19.9      | 6.0        |
+| 2100748  | 979708      | 575525617668   | 21.2      | 3.8        |
+| 2232551  | 215450      | 541165879296   | 11.6      | 0.9        |
+| 2293670  | 424000      | 1468878815234  | 20.1      | -6.5       |
+| 2338490  | 574076      | 137438953472   | 17.1      | 1.3        |
+| 2418458  | 837562      | 1236950581248  | 26.6      | 3.2        |
+| 84997    | 283049      | 214748364803   | 20.4      | -0.4       |
+| 158985   | 530526      | 1554778161154  | 24.5      | 3.8        |
+| 214126   | 715040      | 1460288880642  | 19.2      | -1.4       |
+| 234602   | 784008      | 807453851650   | 26.9      | 0.4        |
+| 333113   | 1107329     | 197568495621   | 8.6       | 4.4        |
+| 410348   | 163001      | 1546188226562  | 29.1      | -0.4       |
+| 609808   | 827070      | 1030792151042  | 16.6      | 10.8       |
+| 662321   | 1000868     | 1202590842885  | 12.0      | -10.0      |
+| 671465   | 1029307     | 188978561024   | 23.3      | -6.6       |
+| 717842   | 1181465     | 1468878815233  | 21.2      | -1.4       |
+| 718585   | 1184018     | 1056561954817  | 25.3      | -3.1       |
+| 720839   | 1190937     | 1322849927170  | 23.1      | 0.4        |
+| 723464   | 983         | 1202590842886  | 20.7      | -5.2       |
+| 806364   | 279941      | 17179869184    | 18.2      | 0.5        |
+| 837068   | 383793      | 1460288880644  | 19.5      | -2.7       |
+| 845864   | 413009      | 1082331758595  | 26.5      | 3.6        |
+| 968382   | 824047      | 1675037245442  | 25.5      | 2.4        |
+| 1158483  | 251979      | 566935683074   | 18.2      | -2.2       |
+| 1230362  | 490834      | 1382979469313  | 33.0      | -0.8       |
+| 1237539  | 515417      | 1              | 18.1      | -2.4       |
+| 1458716  | 45941       | 51539607553    | 29.1      | 3.1        |
+| 1506853  | 203440      | 300647710721   | 20.7      | -1.1       |
+| 1518300  | 239943      | 661424963590   | 19.0      | -13.3      |
+| 1545269  | 332579      | 704374636545   | 21.8      | 1.7        |
+| 1641748  | 653493      | 1632087572481  | 12.1      | -5.6       |
+| 1691325  | 817050      | 206158430209   | 19.6      | 1.1        |
+| 1856723  | 167930      | 197568495617   | 19.4      | -2.3       |
+| 1963550  | 522924      | 292057776130   | 19.9      | 0.0        |
+| 1967475  | 536651      | 635655159809   | 21.5      | -1.3       |
+| 1986735  | 601423      | 34359738368    | 22.2      | -10.9      |
+| 1998078  | 640059      | 403726925827   | 22.5      | 5.1        |
+| 2035741  | 764909      | 592705486851   | 20.7      | 5.8        |
+| 2098024  | 971014      | 1675037245443  | 9.1       | -6.6       |
+| 2176188  | 25481       | 1262720385027  | 9.0       | 3.8        |
+| 2210781  | 141958      | 901943132160   | 19.0      | -7.5       |
+| 119729   | 398564      | 575525617669   | 23.7      | -4.6       |
+| 165373   | 552136      | 1168231104512  | 25.7      | 0.8        |
+| 257877   | 861121      | 94489280513    | 18.0      | 10.3       |
+| 263005   | 877575      | 1443109011458  | 17.8      | 6.7        |
+| 463709   | 340483      | 481036337152   | 22.5      | -2.5       |
+| 510880   | 495726      | 1142461300742  | 21.8      | -1.0       |
+| 551368   | 631618      | 111669149699   | 24.5      | 2.5        |
+| 664718   | 1008218     | 858993459207   | 18.4      | -1.3       |
+| 722923   | 1197777     | 773094113282   | 21.6      | 9.1        |
+| 797451   | 248987      | 309237645315   | 23.8      | 1.1        |
+| 889182   | 559098      | 1657857376260  | 19.4      | -7.4       |
+| 980014   | 862881      | 661424963588   | 26.8      | -2.3       |
+| 1112322  | 100581      | 635655159808   | 23.9      | -3.7       |
+| 1245816  | 542997      | 1580547964932  | 18.2      | -4.5       |
+| 1315352  | 776194      | 386547056643   | 27.5      | -0.9       |
+| 1400256  | 1054729     | 412316860416   | 28.2      | 0.7        |
+| 1440895  | 1186783     | 1185410973696  | 25.2      | 1.5        |
+| 1560396  | 383160      | 1365799600128  | 28.8      | 0.5        |
++----------+-------------+----------------+-----------+------------+
+|  t1.id   | t1.user_id  |  t1.hotel_id   | avg_tmpr  | tmpr_diff  |
++----------+-------------+----------------+-----------+------------+
+| 1592222  | 489333      | 790273982465   | 25.0      | 2.5        |
+| 1632213  | 622653      | 1056561954820  | 11.8      | -4.3       |
+| 1744105  | 992559      | 1511828488193  | 21.3      | -1.5       |
+| 1811510  | 14576       | 695784701952   | 21.1      | 4.6        |
+| 2094162  | 959567      | 764504178690   | 16.8      | -1.3       |
+| 2195402  | 90070       | 764504178689   | 23.4      | 1.4        |
+| 2250341  | 276704      | 240518168578   | 23.7      | -0.7       |
+| 2410568  | 811507      | 1185410973697  | 8.6       | -6.0       |
+| 2436964  | 897388      | 231928233987   | 12.1      | -4.6       |
+| 2521412  | 1177239     | 798863917061   | 8.8       | -1.5       |
+| 49500    | 166513      | 1211180777473  | 23.3      | -1.9       |
+| 107404   | 357425      | 5              | 26.4      | 1.9        |
+| 205356   | 685785      | 1005022347271  | 17.2      | -7.4       |
+| 250528   | 837121      | 1700807049217  | 21.9      | 1.1        |
+| 282790   | 946424      | 1047972020224  | 11.0      | -4.8       |
+| 351021   | 1165783     | 661424963589   | 10.0      | -4.8       |
+| 377853   | 55094       | 652835028998   | 25.0      | -1.5       |
+| 413450   | 173052      | 60129542146    | 28.1      | -5.7       |
+| 435854   | 247876      | 1133871366148  | 26.7      | -1.0       |
+| 556858   | 650251      | 180388626434   | 18.6      | 8.5        |
+| 575968   | 712509      | 17179869187    | 14.9      | -7.0       |
+| 697568   | 1114987     | 94489280512    | 18.3      | -12.5      |
+| 780557   | 192979      | 1365799600129  | 23.6      | -1.6       |
+| 808197   | 286111      | 558345748485   | 16.7      | -6.1       |
+| 854987   | 444726      | 558345748485   | 16.7      | -6.1       |
+| 868339   | 488951      | 1202590842888  | 19.0      | -3.2       |
+| 1092705  | 32604       | 1340029796352  | 8.3       | -2.9       |
+| 1115313  | 110893      | 566935683074   | 16.4      | 0.4        |
+| 1259975  | 590664      | 352187318275   | 26.6      | -1.6       |
+| 1372451  | 968353      | 558345748484   | 20.5      | -10.4      |
+| 1420402  | 1120884     | 68719476737    | 25.4      | 0.3        |
+| 1503308  | 192167      | 1632087572481  | 22.9      | 2.9        |
+| 1654707  | 695965      | 498216206339   | 19.2      | -0.4       |
+| 1708652  | 873493      | 824633720840   | 24.6      | -3.6       |
+| 1806530  | 1196651     | 996432412676   | 17.8      | -8.4       |
+| 1902179  | 320451      | 858993459202   | 25.6      | 1.5        |
+| 1961699  | 516206      | 824633720836   | 23.4      | -2.5       |
+| 1998236  | 640638      | 1700807049217  | 19.1      | -3.3       |
+| 2032554  | 754765      | 1073741824002  | 24.2      | -1.2       |
+| 2035404  | 763984      | 1              | 18.1      | -2.4       |
+| 2070376  | 879771      | 790273982464   | 18.3      | -9.9       |
+| 2107354  | 1001083     | 541165879297   | 23.9      | -6.5       |
+| 2193243  | 83070       | 472446402562   | 23.1      | -2.1       |
+| 2199943  | 105693      | 68719476738    | 23.9      | -0.1       |
+| 2502483  | 1115562     | 1537598291968  | 20.4      | 1.9        |
++----------+-------------+----------------+-----------+------------+
+245 rows selected (64.163 seconds)
+0: jdbc:hive2://sandbox-hdp.hortonworks.com:2>

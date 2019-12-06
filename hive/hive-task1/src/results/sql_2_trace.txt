@@ -1,0 +1,262 @@
+0: jdbc:hive2://sandbox-hdp.hortonworks.com:2> select tbl.hotel_id,tbl.year,month,count(*) as cnt from (
+. . . . . . . . . . . . . . . . . . . . . . .> select t.hotel_id, year(add_months(t.srch_ci,pe.i)) as year, month(add_months(t.srch_ci,pe.i)) as month
+. . . . . . . . . . . . . . . . . . . . . . .> from hdfs_expedia t
+. . . . . . . . . . . . . . . . . . . . . . .> lateral view
+. . . . . . . . . . . . . . . . . . . . . . .> posexplode(split(space((cast(year(t.srch_co) as int) - cast(year(t.srch_ci) as int) ) * 12 +  (cast(month(t.srch_co) as int) - cast(month(t.srch_ci) as int))),' ')) pe as i, x
+. . . . . . . . . . . . . . . . . . . . . . .> ) tbl
+. . . . . . . . . . . . . . . . . . . . . . .> group by hotel_id,year,month
+. . . . . . . . . . . . . . . . . . . . . . .> order by cnt desc
+. . . . . . . . . . . . . . . . . . . . . . .> limit 10;
+INFO  : Compiling command(queryId=hive_20191204102524_0e3eeed4-5dfc-4e72-ada5-3da2ad797fcd): select tbl.hotel_id,tbl.year,month,count(*) as cnt from (
+select t.hotel_id, year(add_months(t.srch_ci,pe.i)) as year, month(add_months(t.srch_ci,pe.i)) as month
+from hdfs_expedia t
+lateral view
+posexplode(split(space((cast(year(t.srch_co) as int) - cast(year(t.srch_ci) as int) ) * 12 +  (cast(month(t.srch_co) as int) - cast(month(t.srch_ci) as int))),' ')) pe as i, x
+) tbl
+group by hotel_id,year,month
+order by cnt desc
+limit 10
+INFO  : Semantic Analysis Completed (retrial = false)
+INFO  : Returning Hive schema: Schema(fieldSchemas:[FieldSchema(name:tbl.hotel_id, type:bigint, comment:null), FieldSchema(name:tbl.year, type:int, comment:null), FieldSchema(name:month, type:int, comment:null), FieldSchema(name:cnt, type:bigint, comment:null)], properties:null)
+INFO  : Completed compiling command(queryId=hive_20191204102524_0e3eeed4-5dfc-4e72-ada5-3da2ad797fcd); Time taken: 0.049 seconds
+INFO  : Executing command(queryId=hive_20191204102524_0e3eeed4-5dfc-4e72-ada5-3da2ad797fcd): select tbl.hotel_id,tbl.year,month,count(*) as cnt from (
+select t.hotel_id, year(add_months(t.srch_ci,pe.i)) as year, month(add_months(t.srch_ci,pe.i)) as month
+from hdfs_expedia t
+lateral view
+posexplode(split(space((cast(year(t.srch_co) as int) - cast(year(t.srch_ci) as int) ) * 12 +  (cast(month(t.srch_co) as int) - cast(month(t.srch_ci) as int))),' ')) pe as i, x
+) tbl
+group by hotel_id,year,month
+order by cnt desc
+limit 10
+INFO  : Query ID = hive_20191204102524_0e3eeed4-5dfc-4e72-ada5-3da2ad797fcd
+INFO  : Total jobs = 1
+INFO  : Launching Job 1 out of 1
+INFO  : Starting task [Stage-1:MAPRED] in serial mode
+INFO  : Subscribed to counters: [] for queryId: hive_20191204102524_0e3eeed4-5dfc-4e72-ada5-3da2ad797fcd
+INFO  : Session is already open
+INFO  : Dag name: select tbl.hotel_id,tbl.year,month,coun...10 (Stage-1)
+INFO  : Status: Running (Executing on YARN cluster with App id application_1575283028480_0017)
+
+----------------------------------------------------------------------------------------------
+        VERTICES      MODE        STATUS  TOTAL  COMPLETED  RUNNING  PENDING  FAILED  KILLED
+----------------------------------------------------------------------------------------------
+Map 1 .......... container     SUCCEEDED      4          4        0        0       0       0
+Reducer 2 ...... container     SUCCEEDED     11         11        0        0       0       0
+Reducer 3 ...... container     SUCCEEDED      1          1        0        0       0       0
+----------------------------------------------------------------------------------------------
+VERTICES: 03/03  [==========================>>] 100%  ELAPSED TIME: 247.51 s
+----------------------------------------------------------------------------------------------
+INFO  : Status: DAG finished successfully in 247.47 seconds
+INFO  :
+INFO  : Query Execution Summary
+INFO  : ----------------------------------------------------------------------------------------------
+INFO  : OPERATION                            DURATION
+INFO  : ----------------------------------------------------------------------------------------------
+INFO  : Compile Query                           0.05s
+INFO  : Prepare Plan                            0.06s
+INFO  : Get Query Coordinator (AM)              0.00s
+INFO  : Submit Plan                             0.04s
+INFO  : Start DAG                               0.63s
+INFO  : Run DAG                               247.47s
+INFO  : ----------------------------------------------------------------------------------------------
+INFO  :
+INFO  : Task Execution Summary
+INFO  : ----------------------------------------------------------------------------------------------
+INFO  :   VERTICES      DURATION(ms)   CPU_TIME(ms)    GC_TIME(ms)   INPUT_RECORDS   OUTPUT_RECORDS
+INFO  : ----------------------------------------------------------------------------------------------
+INFO  :      Map 1         244741.00        495,720         15,681       2,528,242           97,918
+INFO  :  Reducer 2         100239.00          8,720            902          48,959              360
+INFO  :  Reducer 3            210.00            360              0             110                0
+INFO  : ----------------------------------------------------------------------------------------------
+INFO  :
+INFO  : org.apache.tez.common.counters.DAGCounter:
+INFO  :    NUM_SUCCEEDED_TASKS: 16
+INFO  :    TOTAL_LAUNCHED_TASKS: 16
+INFO  :    AM_CPU_MILLISECONDS: 6760
+INFO  :    AM_GC_TIME_MILLIS: 12
+INFO  : File System Counters:
+INFO  :    FILE_BYTES_READ: 21824109
+INFO  :    FILE_BYTES_WRITTEN: 504179
+INFO  :    HDFS_BYTES_READ: 138191071
+INFO  :    HDFS_BYTES_WRITTEN: 453
+INFO  :    HDFS_READ_OPS: 53
+INFO  :    HDFS_WRITE_OPS: 2
+INFO  :    HDFS_OP_CREATE: 1
+INFO  :    HDFS_OP_GET_FILE_STATUS: 28
+INFO  :    HDFS_OP_OPEN: 25
+INFO  :    HDFS_OP_RENAME: 1
+INFO  : org.apache.tez.common.counters.TaskCounter:
+INFO  :    REDUCE_INPUT_GROUPS: 13297
+INFO  :    REDUCE_INPUT_RECORDS: 49069
+INFO  :    COMBINE_INPUT_RECORDS: 0
+INFO  :    SPILLED_RECORDS: 98138
+INFO  :    NUM_SHUFFLED_INPUTS: 347
+INFO  :    NUM_SKIPPED_INPUTS: 0
+INFO  :    NUM_FAILED_SHUFFLE_INPUTS: 0
+INFO  :    MERGED_MAP_OUTPUTS: 347
+INFO  :    GC_TIME_MILLIS: 16583
+INFO  :    TASK_DURATION_MILLIS: 492561
+INFO  :    CPU_MILLISECONDS: 504800
+INFO  :    PHYSICAL_MEMORY_BYTES: 10938744832
+INFO  :    VIRTUAL_MEMORY_BYTES: 43311284224
+INFO  :    COMMITTED_HEAP_BYTES: 10938744832
+INFO  :    INPUT_RECORDS_PROCESSED: 2528242
+INFO  :    INPUT_SPLIT_LENGTH_BYTES: 137986171
+INFO  :    OUTPUT_RECORDS: 49069
+INFO  :    OUTPUT_LARGE_RECORDS: 0
+INFO  :    OUTPUT_BYTES: 1080990
+INFO  :    OUTPUT_BYTES_WITH_OVERHEAD: 1181031
+INFO  :    OUTPUT_BYTES_PHYSICAL: 495731
+INFO  :    ADDITIONAL_SPILLS_BYTES_WRITTEN: 0
+INFO  :    ADDITIONAL_SPILLS_BYTES_READ: 495731
+INFO  :    ADDITIONAL_SPILL_COUNT: 0
+INFO  :    SHUFFLE_CHUNK_COUNT: 15
+INFO  :    SHUFFLE_BYTES: 495731
+INFO  :    SHUFFLE_BYTES_DECOMPRESSED: 1181031
+INFO  :    SHUFFLE_BYTES_TO_MEM: 0
+INFO  :    SHUFFLE_BYTES_TO_DISK: 0
+INFO  :    SHUFFLE_BYTES_DISK_DIRECT: 495731
+INFO  :    NUM_MEM_TO_DISK_MERGES: 0
+INFO  :    NUM_DISK_TO_DISK_MERGES: 0
+INFO  :    SHUFFLE_PHASE_TIME: 99037
+INFO  :    MERGE_PHASE_TIME: 99190
+INFO  :    FIRST_EVENT_RECEIVED: 135
+INFO  :    LAST_EVENT_RECEIVED: 98764
+INFO  : HIVE:
+INFO  :    CREATED_FILES: 1
+INFO  :    DESERIALIZE_ERRORS: 0
+INFO  :    RECORDS_IN_Map_1: 2528242
+INFO  :    RECORDS_OUT_0: 10
+INFO  :    RECORDS_OUT_INTERMEDIATE_Map_1: 97918
+INFO  :    RECORDS_OUT_INTERMEDIATE_Reducer_2: 360
+INFO  :    RECORDS_OUT_INTERMEDIATE_Reducer_3: 0
+INFO  :    RECORDS_OUT_OPERATOR_FS_20: 10
+INFO  :    RECORDS_OUT_OPERATOR_GBY_16: 13267
+INFO  :    RECORDS_OUT_OPERATOR_GBY_8: 97918
+INFO  :    RECORDS_OUT_OPERATOR_LIM_19: 10
+INFO  :    RECORDS_OUT_OPERATOR_LVF_1: 2528242
+INFO  :    RECORDS_OUT_OPERATOR_LVJ_5: 5436522
+INFO  :    RECORDS_OUT_OPERATOR_MAP_0: 0
+INFO  :    RECORDS_OUT_OPERATOR_RS_17: 360
+INFO  :    RECORDS_OUT_OPERATOR_RS_9: 97918
+INFO  :    RECORDS_OUT_OPERATOR_SEL_18: 110
+INFO  :    RECORDS_OUT_OPERATOR_SEL_2: 2528242
+INFO  :    RECORDS_OUT_OPERATOR_SEL_3: 2528242
+INFO  :    RECORDS_OUT_OPERATOR_SEL_6: 5436522
+INFO  :    RECORDS_OUT_OPERATOR_TS_0: 2528242
+INFO  :    RECORDS_OUT_OPERATOR_UDTF_4: 2718261
+INFO  : Shuffle Errors:
+INFO  :    BAD_ID: 0
+INFO  :    CONNECTION: 0
+INFO  :    IO_ERROR: 0
+INFO  :    WRONG_LENGTH: 0
+INFO  :    WRONG_MAP: 0
+INFO  :    WRONG_REDUCE: 0
+INFO  : Shuffle Errors_Reducer_2_INPUT_Map_1:
+INFO  :    BAD_ID: 0
+INFO  :    CONNECTION: 0
+INFO  :    IO_ERROR: 0
+INFO  :    WRONG_LENGTH: 0
+INFO  :    WRONG_MAP: 0
+INFO  :    WRONG_REDUCE: 0
+INFO  : Shuffle Errors_Reducer_3_INPUT_Reducer_2:
+INFO  :    BAD_ID: 0
+INFO  :    CONNECTION: 0
+INFO  :    IO_ERROR: 0
+INFO  :    WRONG_LENGTH: 0
+INFO  :    WRONG_MAP: 0
+INFO  :    WRONG_REDUCE: 0
+INFO  : TaskCounter_Map_1_INPUT_t:
+INFO  :    INPUT_RECORDS_PROCESSED: 2528242
+INFO  :    INPUT_SPLIT_LENGTH_BYTES: 137986171
+INFO  : TaskCounter_Map_1_OUTPUT_Reducer_2:
+INFO  :    ADDITIONAL_SPILLS_BYTES_READ: 0
+INFO  :    ADDITIONAL_SPILLS_BYTES_WRITTEN: 0
+INFO  :    ADDITIONAL_SPILL_COUNT: 0
+INFO  :    OUTPUT_BYTES: 1078603
+INFO  :    OUTPUT_BYTES_PHYSICAL: 493960
+INFO  :    OUTPUT_BYTES_WITH_OVERHEAD: 1178537
+INFO  :    OUTPUT_LARGE_RECORDS: 0
+INFO  :    OUTPUT_RECORDS: 48959
+INFO  :    SHUFFLE_CHUNK_COUNT: 4
+INFO  :    SPILLED_RECORDS: 48959
+INFO  : TaskCounter_Reducer_2_INPUT_Map_1:
+INFO  :    ADDITIONAL_SPILLS_BYTES_READ: 493960
+INFO  :    ADDITIONAL_SPILLS_BYTES_WRITTEN: 0
+INFO  :    COMBINE_INPUT_RECORDS: 0
+INFO  :    FIRST_EVENT_RECEIVED: 133
+INFO  :    LAST_EVENT_RECEIVED: 98583
+INFO  :    MERGED_MAP_OUTPUTS: 336
+INFO  :    MERGE_PHASE_TIME: 99004
+INFO  :    NUM_DISK_TO_DISK_MERGES: 0
+INFO  :    NUM_FAILED_SHUFFLE_INPUTS: 0
+INFO  :    NUM_MEM_TO_DISK_MERGES: 0
+INFO  :    NUM_SHUFFLED_INPUTS: 336
+INFO  :    NUM_SKIPPED_INPUTS: 0
+INFO  :    REDUCE_INPUT_GROUPS: 13267
+INFO  :    REDUCE_INPUT_RECORDS: 48959
+INFO  :    SHUFFLE_BYTES: 493960
+INFO  :    SHUFFLE_BYTES_DECOMPRESSED: 1178537
+INFO  :    SHUFFLE_BYTES_DISK_DIRECT: 493960
+INFO  :    SHUFFLE_BYTES_TO_DISK: 0
+INFO  :    SHUFFLE_BYTES_TO_MEM: 0
+INFO  :    SHUFFLE_PHASE_TIME: 98853
+INFO  :    SPILLED_RECORDS: 48959
+INFO  : TaskCounter_Reducer_2_OUTPUT_Reducer_3:
+INFO  :    ADDITIONAL_SPILLS_BYTES_READ: 0
+INFO  :    ADDITIONAL_SPILLS_BYTES_WRITTEN: 0
+INFO  :    ADDITIONAL_SPILL_COUNT: 0
+INFO  :    OUTPUT_BYTES: 2387
+INFO  :    OUTPUT_BYTES_PHYSICAL: 1771
+INFO  :    OUTPUT_BYTES_WITH_OVERHEAD: 2494
+INFO  :    OUTPUT_LARGE_RECORDS: 0
+INFO  :    OUTPUT_RECORDS: 110
+INFO  :    SHUFFLE_CHUNK_COUNT: 11
+INFO  :    SPILLED_RECORDS: 110
+INFO  : TaskCounter_Reducer_3_INPUT_Reducer_2:
+INFO  :    ADDITIONAL_SPILLS_BYTES_READ: 1771
+INFO  :    ADDITIONAL_SPILLS_BYTES_WRITTEN: 0
+INFO  :    COMBINE_INPUT_RECORDS: 0
+INFO  :    FIRST_EVENT_RECEIVED: 2
+INFO  :    LAST_EVENT_RECEIVED: 181
+INFO  :    MERGED_MAP_OUTPUTS: 11
+INFO  :    MERGE_PHASE_TIME: 186
+INFO  :    NUM_DISK_TO_DISK_MERGES: 0
+INFO  :    NUM_FAILED_SHUFFLE_INPUTS: 0
+INFO  :    NUM_MEM_TO_DISK_MERGES: 0
+INFO  :    NUM_SHUFFLED_INPUTS: 11
+INFO  :    NUM_SKIPPED_INPUTS: 0
+INFO  :    REDUCE_INPUT_GROUPS: 30
+INFO  :    REDUCE_INPUT_RECORDS: 110
+INFO  :    SHUFFLE_BYTES: 1771
+INFO  :    SHUFFLE_BYTES_DECOMPRESSED: 2494
+INFO  :    SHUFFLE_BYTES_DISK_DIRECT: 1771
+INFO  :    SHUFFLE_BYTES_TO_DISK: 0
+INFO  :    SHUFFLE_BYTES_TO_MEM: 0
+INFO  :    SHUFFLE_PHASE_TIME: 184
+INFO  :    SPILLED_RECORDS: 110
+INFO  : TaskCounter_Reducer_3_OUTPUT_out_Reducer_3:
+INFO  :    OUTPUT_RECORDS: 0
+INFO  : org.apache.hadoop.hive.ql.exec.tez.HiveInputCounters:
+INFO  :    GROUPED_INPUT_SPLITS_Map_1: 4
+INFO  :    INPUT_DIRECTORIES_Map_1: 1
+INFO  :    INPUT_FILES_Map_1: 25
+INFO  :    RAW_INPUT_SPLITS_Map_1: 25
+INFO  : Completed executing command(queryId=hive_20191204102524_0e3eeed4-5dfc-4e72-ada5-3da2ad797fcd); Time taken: 248.218 seconds
+INFO  : OK
++----------------+-----------+--------+------+
+|  tbl.hotel_id  | tbl.year  | month  | cnt  |
++----------------+-----------+--------+------+
+| 455266533377   | 2017      | 9      | 445  |
+| 2018634629125  | 2017      | 9      | 432  |
+| 893353197572   | 2017      | 9      | 421  |
+| 1829656068103  | 2017      | 9      | 418  |
+| 1881195675654  | 2017      | 9      | 418  |
+| 2920577761284  | 2017      | 9      | 417  |
+| 128849018887   | 2017      | 9      | 414  |
+| 3204045602824  | 2017      | 9      | 414  |
+| 3032246910980  | 2017      | 9      | 413  |
+| 352187318272   | 2017      | 9      | 412  |
++----------------+-----------+--------+------+
+10 rows selected (248.302 seconds)
+0: jdbc:hive2://sandbox-hdp.hortonworks.com:2>
