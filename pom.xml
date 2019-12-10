@@ -12,5 +12,6 @@
 		<module>kafka</module>
 		<module>commons</module>
 		<module>hive</module>
+		<module>spark</module>
 	</modules>
 </project>

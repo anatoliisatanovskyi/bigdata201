@@ -1,282 +1,283 @@
-{
-  "optimizedSQL": "SELECT `name`, `year`, `month`, `max_tmpr_diff`\nFROM (SELECT `name`, `wthr_year` AS `year`, `wthr_month` AS `month`, MAX(ROUND(ABS(MAX(`avg_tmpr_c`) - MIN(`avg_tmpr_c`)), 2)) AS `max_tmpr_diff`, MAX(ROUND(ABS(MAX(`avg_tmpr_c`) - MIN(`avg_tmpr_c`)), 2)) AS `_o__col10`\nFROM `default`.`hotel_weather`\nGROUP BY `name`, `wthr_year`, `wthr_month`\nORDER BY MAX(ROUND(ABS(MAX(`avg_tmpr_c`) - MIN(`avg_tmpr_c`)), 2)) DESC\nLIMIT 10) AS `t4`",
-  "STAGE DEPENDENCIES": {
-    "Stage-1": {
-      "ROOT STAGE": "TRUE"
-    },
-    "Stage-0": {
-      "DEPENDENT STAGES": "Stage-1"
-    }
-  },
-  "STAGE PLANS": {
-    "Stage-1": {
-      "Tez": {
-        "DagId:": "hive_20191204110345_43aff0ee-ad50-4c27-ba95-6d7ebc2cf07b:53",
-        "Edges:": {
-          "Reducer 2": {
-            "parent": "Map 1",
-            "type": "SIMPLE_EDGE"
-          },
-          "Reducer 3": {
-            "parent": "Reducer 2",
-            "type": "SIMPLE_EDGE"
-          }
-        },
-        "DagName:": "hive_20191204110345_43aff0ee-ad50-4c27-ba95-6d7ebc2cf07b:53",
-        "Vertices:": {
-          "Map 1": {
-            "Map Operator Tree:": [
-              {
-                "TableScan": {
-                  "alias:": "hotel_weather",
-                  "columns:": [
-                    "name",
-                    "avg_tmpr_c",
-                    "wthr_year",
-                    "wthr_month"
-                  ],
-                  "database:": "default",
-                  "Statistics:": "Num rows: 1549363 Data size: 54443410 Basic stats: COMPLETE Column stats: NONE",
-                  "table:": "hotel_weather",
-                  "isTempTable:": "false",
-                  "OperatorId:": "TS_0",
-                  "children": {
-                    "Select Operator": {
-                      "expressions:": "name (type: string), avg_tmpr_c (type: double), wthr_year (type: int), wthr_month (type: int)",
-                      "columnExprMap:": {
-                        "BLOCK__OFFSET__INSIDE__FILE": "BLOCK__OFFSET__INSIDE__FILE",
-                        "INPUT__FILE__NAME": "INPUT__FILE__NAME",
-                        "ROW__ID": "ROW__ID",
-                        "avg_tmpr_c": "avg_tmpr_c",
-                        "hotelid": "hotelid",
-                        "month": "month",
-                        "name": "name",
-                        "wthr_month": "wthr_month",
-                        "wthr_year": "wthr_year",
-                        "year": "year"
-                      },
-                      "outputColumnNames:": [
-                        "name",
-                        "avg_tmpr_c",
-                        "wthr_year",
-                        "wthr_month"
-                      ],
-                      "Statistics:": "Num rows: 1549363 Data size: 54443410 Basic stats: COMPLETE Column stats: NONE",
-                      "OperatorId:": "SEL_16",
-                      "children": {
-                        "Group By Operator": {
-                          "aggregations:": [
-                            "max(avg_tmpr_c)",
-                            "min(avg_tmpr_c)"
-                          ],
-                          "columnExprMap:": {
-                            "_col0": "name",
-                            "_col1": "wthr_year",
-                            "_col2": "wthr_month"
-                          },
-                          "keys:": "name (type: string), wthr_year (type: int), wthr_month (type: int)",
-                          "mode:": "hash",
-                          "outputColumnNames:": [
-                            "_col0",
-                            "_col1",
-                            "_col2",
-                            "_col3",
-                            "_col4"
-                          ],
-                          "Statistics:": "Num rows: 1549363 Data size: 54443410 Basic stats: COMPLETE Column stats: NONE",
-                          "OperatorId:": "GBY_17",
-                          "children": {
-                            "Reduce Output Operator": {
-                              "columnExprMap:": {
-                                "KEY._col0": "_col0",
-                                "KEY._col1": "_col1",
-                                "KEY._col2": "_col2",
-                                "VALUE._col0": "_col3",
-                                "VALUE._col1": "_col4"
-                              },
-                              "key expressions:": "_col0 (type: string), _col1 (type: int), _col2 (type: int)",
-                              "sort order:": "+++",
-                              "Map-reduce partition columns:": "_col0 (type: string), _col1 (type: int), _col2 (type: int)",
-                              "Statistics:": "Num rows: 1549363 Data size: 54443410 Basic stats: COMPLETE Column stats: NONE",
-                              "value expressions:": "_col3 (type: double), _col4 (type: double)",
-                              "OperatorId:": "RS_18",
-                              "outputname:": "Reducer 2",
-                              "outputOperator:": [
-                                "GBY_19"
-                              ]
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            ],
-            "Execution mode:": "vectorized"
-          },
-          "Reducer 2": {
-            "Execution mode:": "vectorized",
-            "Reduce Operator Tree:": {
-              "Group By Operator": {
-                "aggregations:": [
-                  "max(VALUE._col0)",
-                  "min(VALUE._col1)"
-                ],
-                "columnExprMap:": {
-                  "_col0": "KEY._col0",
-                  "_col1": "KEY._col1",
-                  "_col2": "KEY._col2"
-                },
-                "keys:": "KEY._col0 (type: string), KEY._col1 (type: int), KEY._col2 (type: int)",
-                "mode:": "mergepartial",
-                "outputColumnNames:": [
-                  "_col0",
-                  "_col1",
-                  "_col2",
-                  "_col3",
-                  "_col4"
-                ],
-                "Statistics:": "Num rows: 774681 Data size: 27221687 Basic stats: COMPLETE Column stats: NONE",
-                "OperatorId:": "GBY_19",
-                "children": {
-                  "Select Operator": {
-                    "expressions:": "_col0 (type: string), _col1 (type: int), _col2 (type: int), round(abs((_col3 - _col4)), 2) (type: double)",
-                    "columnExprMap:": {
-                      "_col0": "_col0",
-                      "_col1": "_col1",
-                      "_col2": "_col2",
-                      "_col3": "round(abs((_col3 - _col4)), 2)"
-                    },
-                    "outputColumnNames:": [
-                      "_col0",
-                      "_col1",
-                      "_col2",
-                      "_col3"
-                    ],
-                    "Statistics:": "Num rows: 774681 Data size: 27221687 Basic stats: COMPLETE Column stats: NONE",
-                    "OperatorId:": "SEL_20",
-                    "children": {
-                      "Group By Operator": {
-                        "aggregations:": [
-                          "max(_col3)"
-                        ],
-                        "columnExprMap:": {
-                          "_col0": "_col0",
-                          "_col1": "_col1",
-                          "_col2": "_col2"
-                        },
-                        "keys:": "_col0 (type: string), _col1 (type: int), _col2 (type: int)",
-                        "mode:": "complete",
-                        "outputColumnNames:": [
-                          "_col0",
-                          "_col1",
-                          "_col2",
-                          "_col3"
-                        ],
-                        "Statistics:": "Num rows: 387340 Data size: 13610825 Basic stats: COMPLETE Column stats: NONE",
-                        "OperatorId:": "GBY_21",
-                        "children": {
-                          "Select Operator": {
-                            "expressions:": "_col0 (type: string), _col1 (type: int), _col2 (type: int), _col3 (type: double)",
-                            "columnExprMap:": {
-                              "_col0": "_col0",
-                              "_col1": "_col1",
-                              "_col2": "_col2",
-                              "_col3": "_col3",
-                              "_col4": "_col3"
-                            },
-                            "outputColumnNames:": [
-                              "_col0",
-                              "_col1",
-                              "_col2",
-                              "_col4"
-                            ],
-                            "Statistics:": "Num rows: 387340 Data size: 13610825 Basic stats: COMPLETE Column stats: NONE",
-                            "OperatorId:": "SEL_22",
-                            "children": {
-                              "Reduce Output Operator": {
-                                "columnExprMap:": {
-                                  "KEY.reducesinkkey0": "_col4",
-                                  "VALUE._col0": "_col0",
-                                  "VALUE._col1": "_col1",
-                                  "VALUE._col2": "_col2"
-                                },
-                                "key expressions:": "_col4 (type: double)",
-                                "sort order:": "-",
-                                "Statistics:": "Num rows: 387340 Data size: 13610825 Basic stats: COMPLETE Column stats: NONE",
-                                "TopN Hash Memory Usage:": "0.04",
-                                "value expressions:": "_col0 (type: string), _col1 (type: int), _col2 (type: int)",
-                                "OperatorId:": "RS_23",
-                                "outputname:": "Reducer 3",
-                                "outputOperator:": [
-                                  "SEL_24"
-                                ]
+{  
+   "optimizedSQL":"SELECT `name`, `year`, `month`, `tmpr_diff`\nFROM (SELECT `name`, `year`, `month`, ROUND(ABS(MAX(`avg_tmpr`) - MIN(`avg_tmpr`)), 2) AS `tmpr_diff`, DENSE_RANK() OVER (PARTITION BY `year`, `month` ORDER BY ROUND(ABS(MAX(`avg_tmpr`) - MIN(`avg_tmpr`)), 2) DESC ROWS BETWEEN 2147483647 FOLLOWING AND 2147483647 PRECEDING) AS `_o__col5`\nFROM `default`.`hotel_weather`\nGROUP BY `name`, `year`, `month`) AS `t0`\nWHERE `_o__col5` <= 10\nLIMIT 10",
+   "STAGE DEPENDENCIES":{  
+      "Stage-1":{  
+         "ROOT STAGE":"TRUE"
+      },
+      "Stage-0":{  
+         "DEPENDENT STAGES":"Stage-1"
+      }
+   },
+   "STAGE PLANS":{  
+      "Stage-1":{  
+         "Tez":{  
+            "DagId:":"hive_20191210110836_4b79e5fc-63de-4fb9-9de9-212ca506f850:38",
+            "Edges:":{  
+               "Reducer 2":{  
+                  "parent":"Map 1",
+                  "type":"SIMPLE_EDGE"
+               },
+               "Reducer 3":{  
+                  "parent":"Reducer 2",
+                  "type":"SIMPLE_EDGE"
+               }
+            },
+            "DagName:":"hive_20191210110836_4b79e5fc-63de-4fb9-9de9-212ca506f850:38",
+            "Vertices:":{  
+               "Map 1":{  
+                  "Map Operator Tree:":[  
+                     {  
+                        "TableScan":{  
+                           "alias:":"hotel_weather",
+                           "columns:":[  
+                              "name",
+                              "avg_tmpr"
+                           ],
+                           "database:":"default",
+                           "Statistics:":"Num rows: 10098 Data size: 1146300 Basic stats: COMPLETE Column stats: NONE",
+                           "table:":"hotel_weather",
+                           "isTempTable:":"false",
+                           "OperatorId:":"TS_0",
+                           "children":{  
+                              "Select Operator":{  
+                                 "expressions:":"name (type: string), avg_tmpr (type: double), year (type: int), month (type: int)",
+                                 "columnExprMap:":{  
+                                    "BLOCK__OFFSET__INSIDE__FILE":"BLOCK__OFFSET__INSIDE__FILE",
+                                    "INPUT__FILE__NAME":"INPUT__FILE__NAME",
+                                    "ROW__ID":"ROW__ID",
+                                    "avg_tmpr":"avg_tmpr",
+                                    "hotelid":"hotelid",
+                                    "month":"month",
+                                    "name":"name",
+                                    "wthr_date":"wthr_date",
+                                    "year":"year"
+                                 },
+                                 "outputColumnNames:":[  
+                                    "name",
+                                    "avg_tmpr",
+                                    "year",
+                                    "month"
+                                 ],
+                                 "Statistics:":"Num rows: 10098 Data size: 1146300 Basic stats: COMPLETE Column stats: NONE",
+                                 "OperatorId:":"SEL_16",
+                                 "children":{  
+                                    "Group By Operator":{  
+                                       "aggregations:":[  
+                                          "max(avg_tmpr)",
+                                          "min(avg_tmpr)"
+                                       ],
+                                       "columnExprMap:":{  
+                                          "_col0":"name",
+                                          "_col1":"year",
+                                          "_col2":"month"
+                                       },
+                                       "keys:":"name (type: string), year (type: int), month (type: int)",
+                                       "mode:":"hash",
+                                       "outputColumnNames:":[  
+                                          "_col0",
+                                          "_col1",
+                                          "_col2",
+                                          "_col3",
+                                          "_col4"
+                                       ],
+                                       "Statistics:":"Num rows: 10098 Data size: 1146300 Basic stats: COMPLETE Column stats: NONE",
+                                       "OperatorId:":"GBY_17",
+                                       "children":{  
+                                          "Reduce Output Operator":{  
+                                             "columnExprMap:":{  
+                                                "KEY._col0":"_col0",
+                                                "KEY._col1":"_col1",
+                                                "KEY._col2":"_col2",
+                                                "VALUE._col0":"_col3",
+                                                "VALUE._col1":"_col4"
+                                             },
+                                             "key expressions:":"_col0 (type: string), _col1 (type: int), _col2 (type: int)",
+                                             "sort order:":"+++",
+                                             "Map-reduce partition columns:":"_col0 (type: string), _col1 (type: int), _col2 (type: int)",
+                                             "Statistics:":"Num rows: 10098 Data size: 1146300 Basic stats: COMPLETE Column stats: NONE",
+                                             "value expressions:":"_col3 (type: double), _col4 (type: double)",
+                                             "OperatorId:":"RS_18",
+                                             "outputname:":"Reducer 2",
+                                             "outputOperator:":[  
+                                                "GBY_19"
+                                             ]
+                                          }
+                                       }
+                                    }
+                                 }
                               }
-                            }
-                          }
+                           }
                         }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "Reducer 3": {
-            "Execution mode:": "vectorized",
-            "Reduce Operator Tree:": {
-              "Select Operator": {
-                "expressions:": "VALUE._col0 (type: string), VALUE._col1 (type: int), VALUE._col2 (type: int), KEY.reducesinkkey0 (type: double)",
-                "columnExprMap:": {
-                  "_col0": "VALUE._col0",
-                  "_col1": "VALUE._col1",
-                  "_col2": "VALUE._col2",
-                  "_col3": "KEY.reducesinkkey0",
-                  "_col4": "KEY.reducesinkkey0"
-                },
-                "outputColumnNames:": [
-                  "_col0",
-                  "_col1",
-                  "_col2",
-                  "_col3"
-                ],
-                "Statistics:": "Num rows: 387340 Data size: 13610825 Basic stats: COMPLETE Column stats: NONE",
-                "OperatorId:": "SEL_24",
-                "children": {
-                  "Limit": {
-                    "Number of rows:": "10",
-                    "Statistics:": "Num rows: 10 Data size: 350 Basic stats: COMPLETE Column stats: NONE",
-                    "OperatorId:": "LIM_25",
-                    "children": {
-                      "File Output Operator": {
-                        "compressed:": "false",
-                        "Statistics:": "Num rows: 10 Data size: 350 Basic stats: COMPLETE Column stats: NONE",
-                        "table:": {
-                          "input format:": "org.apache.hadoop.mapred.SequenceFileInputFormat",
-                          "output format:": "org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat",
-                          "serde:": "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"
+                     }
+                  ],
+                  "Execution mode:":"vectorized"
+               },
+               "Reducer 2":{  
+                  "Execution mode:":"vectorized",
+                  "Reduce Operator Tree:":{  
+                     "Group By Operator":{  
+                        "aggregations:":[  
+                           "max(VALUE._col0)",
+                           "min(VALUE._col1)"
+                        ],
+                        "columnExprMap:":{  
+                           "_col0":"KEY._col0",
+                           "_col1":"KEY._col1",
+                           "_col2":"KEY._col2"
                         },
-                        "OperatorId:": "FS_26"
-                      }
-                    }
+                        "keys:":"KEY._col0 (type: string), KEY._col1 (type: int), KEY._col2 (type: int)",
+                        "mode:":"mergepartial",
+                        "outputColumnNames:":[  
+                           "_col0",
+                           "_col1",
+                           "_col2",
+                           "_col3",
+                           "_col4"
+                        ],
+                        "Statistics:":"Num rows: 5049 Data size: 573150 Basic stats: COMPLETE Column stats: NONE",
+                        "OperatorId:":"GBY_19",
+                        "children":{  
+                           "Reduce Output Operator":{  
+                              "columnExprMap:":{  
+                                 "KEY.reducesinkkey0":"_col1",
+                                 "KEY.reducesinkkey1":"_col2",
+                                 "KEY.reducesinkkey2":"round(abs((_col3 - _col4)), 2)",
+                                 "VALUE._col0":"_col0",
+                                 "VALUE._col1":"_col3",
+                                 "VALUE._col2":"_col4"
+                              },
+                              "key expressions:":"_col1 (type: int), _col2 (type: int), round(abs((_col3 - _col4)), 2) (type: double)",
+                              "sort order:":"++-",
+                              "Map-reduce partition columns:":"_col1 (type: int), _col2 (type: int)",
+                              "Statistics:":"Num rows: 5049 Data size: 573150 Basic stats: COMPLETE Column stats: NONE",
+                              "TopN Hash Memory Usage:":"0.04",
+                              "value expressions:":"_col0 (type: string), _col3 (type: double), _col4 (type: double)",
+                              "OperatorId:":"RS_20",
+                              "outputname:":"Reducer 3",
+                              "outputOperator:":[  
+                                 "SEL_21"
+                              ]
+                           }
+                        }
+                     }
                   }
-                }
-              }
+               },
+               "Reducer 3":{  
+                  "Execution mode:":"vectorized",
+                  "Reduce Operator Tree:":{  
+                     "Select Operator":{  
+                        "expressions:":"VALUE._col0 (type: string), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: int), VALUE._col1 (type: double), VALUE._col2 (type: double)",
+                        "columnExprMap:":{  
+                           "_col0":"VALUE._col0",
+                           "_col1":"KEY.reducesinkkey0",
+                           "_col2":"KEY.reducesinkkey1",
+                           "_col3":"VALUE._col1",
+                           "_col4":"VALUE._col2"
+                        },
+                        "outputColumnNames:":[  
+                           "_col0",
+                           "_col1",
+                           "_col2",
+                           "_col3",
+                           "_col4"
+                        ],
+                        "Statistics:":"Num rows: 5049 Data size: 573150 Basic stats: COMPLETE Column stats: NONE",
+                        "OperatorId:":"SEL_21",
+                        "children":{  
+                           "PTF Operator":{  
+                              "Function definitions:":[  
+                                 {  
+                                    "Input definition":{  
+                                       "input alias:":"ptf_0",
+                                       "output shape:":"_col0: string, _col1: int, _col2: int, _col3: double, _col4: double",
+                                       "type:":"WINDOWING"
+                                    }
+                                 },
+                                 {  
+                                    "Windowing table definition":{  
+                                       "input alias:":"ptf_1",
+                                       "name:":"windowingtablefunction",
+                                       "order by:":"round(abs((_col3 - _col4)), 2) DESC NULLS LAST",
+                                       "partition by:":"_col1, _col2",
+                                       "window functions:":[  
+                                          {  
+                                             "window function definition":{  
+                                                "alias:":"dense_rank_window_0",
+                                                "arguments:":"round(abs((_col3 - _col4)), 2)",
+                                                "name:":"dense_rank",
+                                                "window function:":"GenericUDAFDenseRankEvaluator",
+                                                "window frame:":"ROWS PRECEDING(MAX)~FOLLOWING(MAX)",
+                                                "isPivotResult:":"true"
+                                             }
+                                          }
+                                       ]
+                                    }
+                                 }
+                              ],
+                              "Statistics:":"Num rows: 5049 Data size: 573150 Basic stats: COMPLETE Column stats: NONE",
+                              "OperatorId:":"PTF_22",
+                              "children":{  
+                                 "Filter Operator":{  
+                                    "predicate:":"(dense_rank_window_0 <= 10) (type: boolean)",
+                                    "Statistics:":"Num rows: 1683 Data size: 191050 Basic stats: COMPLETE Column stats: NONE",
+                                    "OperatorId:":"FIL_23",
+                                    "children":{  
+                                       "Select Operator":{  
+                                          "expressions:":"_col0 (type: string), _col1 (type: int), _col2 (type: int), round(abs((_col3 - _col4)), 2) (type: double)",
+                                          "columnExprMap:":{  
+                                             "_col0":"_col0",
+                                             "_col1":"_col1",
+                                             "_col2":"_col2",
+                                             "_col3":"round(abs((_col3 - _col4)), 2)"
+                                          },
+                                          "outputColumnNames:":[  
+                                             "_col0",
+                                             "_col1",
+                                             "_col2",
+                                             "_col3"
+                                          ],
+                                          "Statistics:":"Num rows: 1683 Data size: 191050 Basic stats: COMPLETE Column stats: NONE",
+                                          "OperatorId:":"SEL_24",
+                                          "children":{  
+                                             "Limit":{  
+                                                "Number of rows:":"10",
+                                                "Statistics:":"Num rows: 10 Data size: 1130 Basic stats: COMPLETE Column stats: NONE",
+                                                "OperatorId:":"LIM_25",
+                                                "children":{  
+                                                   "File Output Operator":{  
+                                                      "compressed:":"false",
+                                                      "Statistics:":"Num rows: 10 Data size: 1130 Basic stats: COMPLETE Column stats: NONE",
+                                                      "table:":{  
+                                                         "input format:":"org.apache.hadoop.mapred.SequenceFileInputFormat",
+                                                         "output format:":"org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat",
+                                                         "serde:":"org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe"
+                                                      },
+                                                      "OperatorId:":"FS_26"
+                                                   }
+                                                }
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               }
             }
-          }
-        }
+         }
+      },
+      "Stage-0":{  
+         "Fetch Operator":{  
+            "limit:":"10",
+            "Processor Tree:":{  
+               "ListSink":{  
+                  "OperatorId:":"LIST_SINK_27"
+               }
+            }
+         }
       }
-    },
-    "Stage-0": {
-      "Fetch Operator": {
-        "limit:": "-1",
-        "Processor Tree:": {
-          "ListSink": {
-            "OperatorId:": "LIST_SINK_27"
-          }
-        }
-      }
-    }
-  }
+   }
 }

@@ -1,65 +1,138 @@
-### creating partitioned table from external hdfs table with expedia data 
-CREATE TABLE hotel_visit (
-id bigint,
-user_id int,
-srch_ci string,
-srch_co string
-) 
-PARTITIONED BY (hotel_id bigint);
+# Top 10 hotels with max absolute temperature difference by month
 
-INSERT OVERWRITE TABLE hotel_visit PARTITION (hotel_id)
-SELECT id, user_id, srch_ci, srch_co, hotel_id
-FROM hdfs_expedia;
+SELECT t1.NAME      AS name, 
+       t1.year      AS year, 
+       t1.month     AS month, 
+       t1.tmpr_diff AS tmpr_diff 
+FROM   ( 
+                SELECT   t2.name, 
+                         t2.year, 
+                         t2.month, 
+                         t2.tmpr_diff, 
+                         dense_rank() OVER (PARTITION BY t2.year, t2.month ORDER BY t2.tmpr_diff DESC) AS rank 
+                FROM    ( 
+                                  SELECT   name, 
+                                           year, 
+                                           month, 
+                                           Round(Abs(Max(avg_tmpr) - Min(avg_tmpr)), 2) AS tmpr_diff 
+                                  FROM     hotel_weather 
+                                  GROUP BY name, 
+                                           year, 
+                                           month ) t2 ) t1 
+WHERE  t1.rank <= 10 limit 10; 
 
+##################################################################################################
+# Top 10 busy (e.g. with the biggest visits count) hotels for each month. 
+# If visit dates refer to several months it should be counted for all affected months.
 
+CREATE temporary TABLE hotel_visit AS 
+  SELECT t.hotel_id, 
+         Year(Add_months(t.srch_ci, pe.i)) AS year, 
+Month(Add_months(t.srch_ci, pe.i)) AS month FROM hdfs_expedia t lateral view posexplode(split(space((cast 
+(year(t.srch_co) AS INT) - cast(year(t.srch_ci) AS INT) ) * 12 + 
+(cast(month(t.srch_co) AS INT) - cast(month(t.srch_ci) AS INT))), ' ')) pe AS i, x;  
 
-### Top 10 hotels with max absolute difference variance temperature by month
-EXPLAIN FORMATTED SELECT tbl.name AS name, tbl.wthr_year AS year, tbl.wthr_month AS month, MAX(tbl.tmpr_diff) AS max_tmpr_diff FROM(
-   SELECT name, wthr_year, wthr_month, ROUND(ABS(MAX(avg_tmpr_c) - MIN(avg_tmpr_c)), 2) AS tmpr_diff 
-   FROM hotel_weather 
-   GROUP BY name, wthr_year, wthr_month
-) tbl
-GROUP BY tbl.name, tbl.wthr_year, tbl.wthr_month
-ORDER BY MAX(tbl.tmpr_diff) DESC
-LIMIT 10;
+SELECT t1.hotel_id AS hotel_id, 
+       t1.year     AS year, 
+       t1.month    AS month, 
+       t1.cnt      AS visit_count 
+FROM   ( 
+                SELECT   t2.hotel_id, 
+                         t2.year, 
+                         t2.month, 
+                         t2.cnt, 
+                         Dense_rank() OVER (partition BY t2.year, t2.month ORDER BY t2.cnt DESC) AS rank 
+                FROM     ( 
+                                  SELECT   hotel_id, 
+                                           year, 
+                                           month, 
+                                           Count(*) AS cnt 
+                                  FROM     hotel_visit 
+                                  GROUP BY hotel_id, 
+                                           year, 
+                                           month) t2 ) t1 
+WHERE  t1.rank <= 10 limit 10;
 
-### Top 10 busy (e.g. with the biggest visits count) hotels for each month. 
-### If visit dates refer to several months it should be counted for all affected months.
-select tbl.hotel_id,tbl.year,month,count(*) as cnt from (
-select t.hotel_id, year(add_months(t.srch_ci,pe.i)) as year, month(add_months(t.srch_ci,pe.i)) as month
-from hdfs_expedia t
-lateral view 
-posexplode(split(space((cast(year(t.srch_co) as int) - cast(year(t.srch_ci) as int) ) * 12 +  (cast(month(t.srch_co) as int) - cast(month(t.srch_ci) as int))),' ')) pe as i, x
-) tbl
-group by hotel_id,year,month
-order by cnt desc
-limit 10;
+##################################################################################################
+# For visits with extended stay (more than 7 days) 
+# calculate weather trend (the day temperature difference between last and first day of stay) 
+# and average temperature during stay.
 
+CREATE TEMPORARY TABLE long_stay_hotel_visit AS 
+  SELECT t.id, 
+         t.user_id, 
+         t.hotel_id, 
+         date_add(t.srch_ci, pe.i) AS visit_date FROM hdfs_expedia t lateral 
+view posexplode(split(space(datediff(t.srch_co, t.srch_ci)), ' ')) pe AS i, x 
+WHERE datediff(to_date(t.srch_co), to_date(t.srch_ci)) > 7;  
 
+SELECT t1.id, 
+       t1.user_id, 
+       t1.hotel_id, 
+       t3.tmpr_diff                 AS wthr_trend, 
+       Round(Avg(t2.avg_tmpr), 1) AS avg_tmpr_during_stay 
+FROM   long_stay_hotel_visit t1 
+       JOIN hotel_weather t2 
+         ON t1.hotel_id = t2.hotelid 
+            AND t1.visit_date = t2.wthr_date 
+       JOIN (SELECT tt1.id, 
+                    Round(( tt2.avg_tmpr - tt3.avg_tmpr ), 1) AS tmpr_diff 
+             FROM   hdfs_expedia tt1 
+                    JOIN hotel_weather tt2 
+                      ON tt1.hotel_id = tt2.hotelid 
+                         AND tt1.srch_co = tt2.wthr_date 
+                    JOIN hotel_weather tt3 
+                      ON tt1.hotel_id = tt3.hotelid 
+                         AND tt1.srch_ci = tt3.wthr_date) t3 
+         ON t1.id = t3.id 
+GROUP  BY t1.id, 
+          t1.user_id, 
+          t1.hotel_id, 
+          t3.tmpr_diff;  
 
-### For visits with extended stay (more than 7 days) 
-### average temperature during stay.
-select t1.id, t1.user_id, t1.hotel_id, 
-ROUND(AVG(t2.avg_tmpr_c), 1) as avg_tmpr, 
-t3.tmpr_diff as tmpr_diff
-FROM (SELECT t.id, t.user_id, t.hotel_id, date_add(t.srch_ci,pe.i) as visit_date
-FROM hdfs_expedia t
-lateral view
-posexplode(split(space(datediff(t.srch_co,t.srch_ci)),' ')) pe as i,x
-WHERE datediff(to_date(t.srch_co), to_date(t.srch_ci)) > 7
-) t1
-JOIN kafka_hotel_weather t2
-ON t1.hotel_id = t2.hotelid
-AND t1.visit_date = t2.wthr_date
-JOIN (
-SELECT tt1.id, ROUND((tt2.avg_tmpr - tt3.avg_tmpr), 1) as tmpr_diff
-FROM hdfs_expedia tt1
-JOIN hotel_weather tt2
-ON tt1.hotel_id = tt2.hotelid
-AND tt1.srch_co = tt2.wthr_date
-JOIN hotel_weather tt3
-ON tt1.hotel_id = tt3.hotelid
-AND tt1.srch_ci = tt3.wthr_date
-) t3
-ON t1.id = t3.id
-GROUP BY t1.id,t1.user_id,t1.hotel_id,t3.tmpr_diff;
+### Table schemas ################################################################################
+
+DESCRIBE hotel_weather;
++--------------------------+------------+----------+
+|         col_name         | data_type  | comment  |
++--------------------------+------------+----------+
+| hotelid                  | string     |          |
+| name                     | string     |          |
+| avg_tmpr                 | double     |          |
+| wthr_date                | string     |          |
+| year                     | int        |          |
+| month                    | int        |          |
+|                          | NULL       | NULL     |
+| # Partition Information  | NULL       | NULL     |
+| # col_name               | data_type  | comment  |
+| year                     | int        |          |
+| month                    | int        |          |
++--------------------------+------------+----------+
+
+DESCRIBE hdfs_expedia;
++----------------------------+------------+----------+
+|          col_name          | data_type  | comment  |
++----------------------------+------------+----------+
+| id                         | bigint     |          |
+| date_time                  | string     |          |
+| site_name                  | int        |          |
+| posa_continent             | int        |          |
+| user_location_country      | int        |          |
+| user_location_region       | int        |          |
+| user_location_city         | int        |          |
+| orig_destination_distance  | double     |          |
+| user_id                    | int        |          |
+| is_mobile                  | int        |          |
+| is_package                 | int        |          |
+| channel                    | int        |          |
+| srch_ci                    | string     |          |
+| srch_co                    | string     |          |
+| srch_adults_cnt            | int        |          |
+| srch_children_cnt          | int        |          |
+| srch_rm_cnt                | int        |          |
+| srch_destination_id        | int        |          |
+| srch_destination_type_id   | int        |          |
+| hotel_id                   | bigint     |          |
++----------------------------+------------+----------+
+
+##################################################################################################
