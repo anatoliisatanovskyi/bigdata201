@@ -20,6 +20,7 @@ import java.util.stream.IntStream;
 import org.junit.Test;
 
 public class CustomTest {
+
 	@Test
 	public void testIdleBusyDays() throws Exception {
 		Long startTimestamp = new GregorianCalendar(2019, 01, 01, 0, 0, 0).getTimeInMillis();
@@ -96,4 +97,5 @@ public class CustomTest {
 			return co;
 		}
 	}
+
 }
