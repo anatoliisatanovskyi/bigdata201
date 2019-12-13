@@ -6,32 +6,39 @@ public class Config {
 
 	private static volatile Config INSTANCE;
 
-	private final String sparkSqlWarehouseDir;
-	private final Integer minIdleDays;
-	private final Integer maxIdleDays;
-	private final KafkaConfig kafkaConfig;
+	private final String defaultFS;
+	private final String hdfsDir;
+	private final String kafkaStreamReader;
+	private final String kafkaTopic;
+	private final Integer kafkaBatchSize;
 
-	private Config(String sparkSqlWarehouseDir, Integer minIdleDays, Integer maxIdleDays, KafkaConfig kafkaConfig) {
-		this.sparkSqlWarehouseDir = sparkSqlWarehouseDir;
-		this.minIdleDays = minIdleDays;
-		this.maxIdleDays = maxIdleDays;
-		this.kafkaConfig = kafkaConfig;
+	private Config(String defaultFS, String hdfsDir, String kafkaStreamReader, String kafkaTopic,
+			Integer kafkaBatchSize) {
+		this.defaultFS = defaultFS;
+		this.hdfsDir = hdfsDir;
+		this.kafkaStreamReader = kafkaStreamReader;
+		this.kafkaTopic = kafkaTopic;
+		this.kafkaBatchSize = kafkaBatchSize;
 	}
 
-	public String getSparkSqlWarehouseDir() {
-		return sparkSqlWarehouseDir;
+	public String getDefaultFS() {
+		return defaultFS;
 	}
 
-	public Integer getMinIdleDays() {
-		return minIdleDays;
+	public String getHdfsDir() {
+		return hdfsDir;
 	}
 
-	public Integer getMaxIdleDays() {
-		return maxIdleDays;
+	public String getKafkaStreamReader() {
+		return kafkaStreamReader;
 	}
 
-	public KafkaConfig kafka() {
-		return kafkaConfig;
+	public String getKafkaTopic() {
+		return kafkaTopic;
+	}
+
+	public Integer getKafkaBatchSize() {
+		return kafkaBatchSize;
 	}
 
 	public static Config load(Properties properties) {
@@ -40,15 +47,12 @@ public class Config {
 			throw new IllegalStateException("configuration already loaded");
 		}
 
-		String sparkSqlWarehouseDir = properties.getProperty("sparkSqlWarehouseDir");
-		Integer minIdleDays = Integer.parseInt(properties.getProperty("minIdleDays"));
-		Integer maxIdleDays = Integer.parseInt(properties.getProperty("maxIdleDays"));
-		String kafkaHostname = properties.getProperty("kafkaHostname");
-		Integer kafkaPort = Integer.parseInt(properties.getProperty("kafkaPort"));
-		String kafkaTopicHotelWeather = properties.getProperty("kafkaTopicHotelWeather");
-		KafkaConfig kafkaConfig = new KafkaConfig(kafkaHostname, kafkaPort, kafkaTopicHotelWeather);
-
-		INSTANCE = new Config(sparkSqlWarehouseDir, minIdleDays, maxIdleDays, kafkaConfig);
+		String defaultFS = properties.getProperty("defaultFS");
+		String hdfsDir = properties.getProperty("hdfsDir");
+		String kafkaStreamReader = properties.getProperty("kafkaStreamReader");
+		String kafkaTopic = properties.getProperty("kafkaTopic");
+		Integer kafkaBatchSize = Integer.parseInt(properties.getProperty("kafkaBatchSize"));
+		INSTANCE = new Config(defaultFS, hdfsDir, kafkaStreamReader, kafkaTopic, kafkaBatchSize);
 		System.out.println("config:" + INSTANCE);
 		return INSTANCE;
 	}
@@ -58,29 +62,5 @@ public class Config {
 			throw new IllegalStateException("config is not loaded");
 		}
 		return INSTANCE;
-	}
-
-	static class KafkaConfig {
-		private final String hostname;
-		private final Integer port;
-		private final String topicHotelWeather;
-
-		public KafkaConfig(String hostname, Integer port, String topicHotelWeather) {
-			this.hostname = hostname;
-			this.port = port;
-			this.topicHotelWeather = topicHotelWeather;
-		}
-
-		public String getHostname() {
-			return hostname;
-		}
-
-		public Integer getPort() {
-			return port;
-		}
-
-		public String getTopicHotelWeather() {
-			return topicHotelWeather;
-		}
 	}
 }
