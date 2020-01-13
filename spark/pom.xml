@@ -9,5 +9,6 @@
   <packaging>pom</packaging>
   <modules>
   	<module>spark-batching</module>
+  	<module>spark-streaming</module>
   </modules>
 </project>
