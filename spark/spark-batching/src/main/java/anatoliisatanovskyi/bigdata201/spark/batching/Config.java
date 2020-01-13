@@ -1,5 +1,9 @@
 package anatoliisatanovskyi.bigdata201.spark.batching;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Properties;
 
 public class Config {
@@ -8,14 +12,16 @@ public class Config {
 
 	private final String defaultFS;
 	private final String hdfsDir;
+	private final String kafkaConsumerListener;
 	private final String kafkaStreamReader;
 	private final String kafkaTopic;
 	private final Integer kafkaBatchSize;
 
-	private Config(String defaultFS, String hdfsDir, String kafkaStreamReader, String kafkaTopic,
-			Integer kafkaBatchSize) {
+	private Config(String defaultFS, String hdfsDir, String kafkaConsumerListener, String kafkaStreamReader,
+			String kafkaTopic, Integer kafkaBatchSize) {
 		this.defaultFS = defaultFS;
 		this.hdfsDir = hdfsDir;
+		this.kafkaConsumerListener = kafkaConsumerListener;
 		this.kafkaStreamReader = kafkaStreamReader;
 		this.kafkaTopic = kafkaTopic;
 		this.kafkaBatchSize = kafkaBatchSize;
@@ -27,6 +33,10 @@ public class Config {
 
 	public String getHdfsDir() {
 		return hdfsDir;
+	}
+
+	public String getKafkaConsumerListener() {
+		return kafkaConsumerListener;
 	}
 
 	public String getKafkaStreamReader() {
@@ -41,6 +51,14 @@ public class Config {
 		return kafkaBatchSize;
 	}
 
+	public static Config load(String path) throws FileNotFoundException, IOException {
+		try (FileInputStream fis = new FileInputStream(new File(path))) {
+			Properties properties = new Properties();
+			properties.load(fis);
+			return load(properties);
+		}
+	}
+
 	public static Config load(Properties properties) {
 
 		if (INSTANCE != null) {
@@ -49,10 +67,11 @@ public class Config {
 
 		String defaultFS = properties.getProperty("defaultFS");
 		String hdfsDir = properties.getProperty("hdfsDir");
+		String kafkaConsumerListener = properties.getProperty("kafkaConsumerListener");
 		String kafkaStreamReader = properties.getProperty("kafkaStreamReader");
 		String kafkaTopic = properties.getProperty("kafkaTopic");
 		Integer kafkaBatchSize = Integer.parseInt(properties.getProperty("kafkaBatchSize"));
-		INSTANCE = new Config(defaultFS, hdfsDir, kafkaStreamReader, kafkaTopic, kafkaBatchSize);
+		INSTANCE = new Config(defaultFS, hdfsDir, kafkaConsumerListener, kafkaStreamReader, kafkaTopic, kafkaBatchSize);
 		System.out.println("config:" + INSTANCE);
 		return INSTANCE;
 	}
