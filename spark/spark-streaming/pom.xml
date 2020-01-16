@@ -8,12 +8,12 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>spark-streaming</artifactId>
-	
+
 	<properties>
 		<spark.version>2.4.0</spark.version>
 		<jackson.version>2.10.0</jackson.version>
 	</properties>
-	
+
 	<dependencies>
 
 		<dependency>
@@ -91,10 +91,11 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
+				<version>2.4</version>
 				<executions>
 					<execution>
 						<id>copy-dependencies</id>
-						<phase>prepare-package</phase>
+						<phase>package</phase>
 						<goals>
 							<goal>copy-dependencies</goal>
 						</goals>
@@ -102,6 +103,9 @@
 							<outputDirectory>
 								${project.build.directory}/libs
 							</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>false</overWriteSnapshots>
+							<overWriteIfNewer>true</overWriteIfNewer>
 						</configuration>
 					</execution>
 				</executions>
