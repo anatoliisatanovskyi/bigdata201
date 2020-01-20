@@ -43,13 +43,12 @@ public class Runner {
 		SparkSession spark = createSparkSession();
 		spark.sql("CREATE TEMPORARY VIEW expedia2 USING com.databricks.spark.avro OPTIONS (path '/expedia')");
 
-		// Read Expedia data for 2016 year from HDFS as initial state DataFrame
-		Dataset<Row> expedia2016 = spark.sql("SELECT * FROM expedia2 WHERE year(srch_ci) = 2016").alias("expedia2016");
+		Dataset<Row> expedia2016 = spark.sql("SELECT *,DATEDIFF(srch_co, srch_ci) FROM expedia2 WHERE year(srch_ci) = 2016").alias("expedia2016");
+		expedia2016.createTempView("expedia2016");
 
-		// join with hotels+weather data from Kafka topic
-		/* Dataset<Row> kafka = */spark.read().format("org.apache.spark.sql.kafka010.KafkaSourceProvider")//
+		Dataset<Row> kafka = spark.read().format("org.apache.spark.sql.kafka010.KafkaSourceProvider")//
 				.option("kafka.bootstrap.servers", "sandbox-hdp.hortonworks.com:6667")//
-				.option("subscribe", "kafka_weather3")//
+				.option("subscribe", "kafkaHotelWeather")//
 				.option("startingOffsets", "earliest")//
 				.option("endingOffsets", "latest")//
 				.option("failOnDataLoss", "false") //
@@ -58,21 +57,16 @@ public class Runner {
 				.select(from_json(col("value").cast(DataTypes.StringType), kafkaTopicStructSchema()).alias("tmp"))//
 				.select("tmp.*")//
 				.alias("kafka");
+		kafka.createTempView("kafka");
 
-		// Dataset<Row> kafka1 = kafka.select("kafka.*").alias("kafka1");
-
-		// add average day temperature at checkin
-		// Filter incoming data by having average temperature more than 0 Celsius
-		// degrees
-		Dataset<Row> hotelWeather = spark
-				.sql("SELECT hotelId,wthr_date,avg_tmpr_c FROM kafka_hotel_weather WHERE avg_tmpr_c > 0");
+		Dataset<Row> hotelWeather = spark.sql("SELECT hotelId,wthr_date,avg_tmpr_c FROM kafka WHERE avg_tmpr_c > 0");
 
 		Dataset<Row> enriched2016 = expedia2016
-				.join(hotelWeather, expedia2016.col("hotel_id").equalTo(hotelWeather.col("hotelId")), "left_inner")
+				.join(hotelWeather, expedia2016.col("hotel_id").equalTo(hotelWeather.col("hotelId")))
 				.alias("enriched2016");
-
-		enriched2016.show(10);
-
+		enriched2016.createTempView("enriched2016");
+		
+		spark.sql("SELECT *,count()");
 		// Calculate customer's duration of stay as days between requested check-in and
 		// check-out date
 

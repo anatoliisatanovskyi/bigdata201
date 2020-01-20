@@ -12,12 +12,12 @@ public class CoordsProcessorTest {
 
 		String apiKey = "91689528cebb4e1d9f309c1038119cf7";
 		int geohashLength = 5;
-		CoordsProcessor ñoordsProcessor = new CoordsProcessor(apiKey, geohashLength);
+		CoordsProcessor coordsProcessor = new CoordsProcessor(apiKey, geohashLength);
 
 		String lat = "41.70064";
 		String lng = "-91.607";
 
-		String geohash = ñoordsProcessor.processToGeohash(lat, lng);
+		String geohash = coordsProcessor.processToGeohash(lat, lng);
 		assertNotNull(geohash);
 		assertEquals("9zqv5", geohash);
 	}

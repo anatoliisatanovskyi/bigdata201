@@ -72,7 +72,7 @@ public class Config {
 		String kafkaTopic = properties.getProperty("kafkaTopic");
 		Integer kafkaBatchSize = Integer.parseInt(properties.getProperty("kafkaBatchSize"));
 		INSTANCE = new Config(defaultFS, hdfsDir, kafkaConsumerListener, kafkaStreamReader, kafkaTopic, kafkaBatchSize);
-		System.out.println("config:" + INSTANCE);
+		
 		return INSTANCE;
 	}
 

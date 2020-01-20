@@ -109,7 +109,6 @@ public class Hotel implements Geohashable {
 		this.geohash = geohash;
 	}
 
-	@Override
 	public String geohash(int precision) {
 		try {
 			return Optional.ofNullable(geohash).orElse(
