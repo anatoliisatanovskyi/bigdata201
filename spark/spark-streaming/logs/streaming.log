@@ -1,0 +1,4 @@
+2020-01-31 11:22:40 WARN  org.apache.spark.util.Utils:66 - Your hostname, anatoly-Lenovo-Y50-70 resolves to a loopback address: 127.0.1.1; using 192.168.88.251 instead (on interface wlp8s0)
+2020-01-31 11:22:40 WARN  org.apache.spark.util.Utils:66 - Set SPARK_LOCAL_IP if you need to bind to another address
+2020-01-31 11:22:40 WARN  org.apache.hadoop.util.NativeCodeLoader:60 - Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+2020-01-31 11:22:41 INFO  org.spark_project.jetty.util.log:192 - Logging initialized @1965ms

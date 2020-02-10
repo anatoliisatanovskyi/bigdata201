@@ -46,7 +46,7 @@ public class HotelsWeatherEnricher {
 	public void init() {
 		executorService = Executors.newFixedThreadPool(config.kafka().getInputTopicWeatherPartitions());
 		workerFinishLatch = new CountDownLatch(config.kafka().getInputTopicWeatherPartitions());
-		statisticsService.scheduleAtFixedRate(new StatisticsTimer(), 0L, 5L, TimeUnit.SECONDS);
+		statisticsService.scheduleAtFixedRate(new StatisticsTimer(), 0L, 1L, TimeUnit.SECONDS);
 	}
 
 	public void awaitTillFinished() throws InterruptedException {
@@ -140,6 +140,10 @@ public class HotelsWeatherEnricher {
 				ConsumerRecords<byte[], Weather> records = null;
 				do {
 					records = consumer.poll(Duration.ofSeconds(10));
+					int currCount = records.count();
+					if(currCount != 0) {
+						logger.info("records cosumed: " + currCount);
+					}
 					records.forEach(record -> {
 						Weather weather = record.value();
 						consumeCounter.incrementAndGet();
