@@ -13,5 +13,6 @@
 		<module>commons</module>
 		<module>hive</module>
 		<module>spark</module>
+		<module>orchestration</module>
 	</modules>
 </project>
