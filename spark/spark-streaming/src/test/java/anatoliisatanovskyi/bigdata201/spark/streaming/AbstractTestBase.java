@@ -21,9 +21,13 @@ public class AbstractTestBase {
 
 	private DatasetProvider datasetProvider = new TestDatasetProvider();
 
+	private static Config config;
+
 	@BeforeClass
 	public static void beforeClass() throws FileNotFoundException, IOException {
-		Config.load(DatasetProviderTest.class.getClassLoader().getResource("config.properties").getFile());
+		if (config == null) {
+			config = Config.load(DatasetProviderTest.class.getClassLoader().getResource("config.properties").getFile());
+		}
 	}
 
 	@After
