@@ -1,4 +1,4 @@
-package anatoliisatanovskyi.bigdata201.orchestration.oozie;
+package anatoliisatanovskyi.bigdata201.orchestration;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -11,11 +11,13 @@ public class Config {
 	private final String defaultFS;
 	private final String inputPath;
 	private final String outputPath;
+	private final String outputType;
 
-	public Config(String defaultFS, String inputPath, String outputPath) {
+	public Config(String defaultFS, String inputPath, String outputPath, String outputType) {
 		this.defaultFS = defaultFS;
 		this.inputPath = inputPath;
 		this.outputPath = outputPath;
+		this.outputType = outputType;
 	}
 
 	public String getDefaultFS() {
@@ -30,33 +32,24 @@ public class Config {
 		return outputPath;
 	}
 
-	public static Config parse(String[] args) {
+	public String getOutputType() {
+		return outputType;
+	}
 
-		if (INSTANCE != null) {
-			throw new IllegalStateException("config already parsed");
-		}
+	public static Config parse(String... args) {
 
 		Set<String> arguments = new HashSet<>(Arrays.asList(args));
 
 		String defaultFS = arguments.stream().filter(arg -> arg.startsWith("--defaultFS=")).findFirst()
-				.map(arg -> arg.replace("--defaultFS=", "")).get();
-		if (defaultFS == null) {
-			throw new IllegalArgumentException("missing required argument: defaultFS");
-		}
-
+				.map(arg -> arg.replace("--defaultFS=", "")).orElse(null);
 		String inputPath = arguments.stream().filter(arg -> arg.startsWith("--inputPath=")).findFirst()
 				.map(arg -> arg.replace("--inputPath=", "")).get();
-		if (inputPath == null) {
-			throw new IllegalArgumentException("missing required argument: inputPath");
-		}
-
 		String outputPath = arguments.stream().filter(arg -> arg.startsWith("--outputPath=")).findFirst()
 				.map(arg -> arg.replace("--outputPath=", "")).get();
-		if (outputPath == null) {
-			throw new IllegalArgumentException("missing required argument: outputPath");
-		}
+		String outputType = arguments.stream().filter(arg -> arg.startsWith("--outputType=")).findFirst()
+				.map(arg -> arg.replace("--outputType=", "")).get();
 
-		INSTANCE = new Config(defaultFS, inputPath, outputPath);
+		INSTANCE = new Config(defaultFS, inputPath, outputPath, outputType);
 		return INSTANCE;
 	}
 

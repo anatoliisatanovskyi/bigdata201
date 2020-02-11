@@ -1,4 +1,4 @@
-package anatoliisatanovskyi.bigdata201.orchestration.oozie.writer;
+package anatoliisatanovskyi.bigdata201.orchestration.writer;
 
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;

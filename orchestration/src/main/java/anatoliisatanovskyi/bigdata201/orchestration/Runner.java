@@ -1,4 +1,4 @@
-package anatoliisatanovskyi.bigdata201.orchestration.oozie;
+package anatoliisatanovskyi.bigdata201.orchestration;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.sql.AnalysisException;
@@ -6,11 +6,10 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 
-import anatoliisatanovskyi.bigdata201.orchestration.oozie.dataset.DatasetProvider;
-import anatoliisatanovskyi.bigdata201.orchestration.oozie.dataset.DatasetProviderImpl;
-import anatoliisatanovskyi.bigdata201.orchestration.oozie.service.HotelStayService;
-import anatoliisatanovskyi.bigdata201.orchestration.oozie.writer.CsvOutputWriter;
-import anatoliisatanovskyi.bigdata201.orchestration.oozie.writer.OutputWriter;
+import anatoliisatanovskyi.bigdata201.orchestration.dataset.DatasetProvider;
+import anatoliisatanovskyi.bigdata201.orchestration.dataset.DatasetProviderImpl;
+import anatoliisatanovskyi.bigdata201.orchestration.service.HotelStayService;
+import anatoliisatanovskyi.bigdata201.orchestration.writer.OutputWriter;
 
 public class Runner {
 
@@ -18,7 +17,11 @@ public class Runner {
 
 	private DatasetProvider datasetProvider = new DatasetProviderImpl();
 	private HotelStayService hotelStayService = new HotelStayService();
-	private OutputWriter outputWriter = new CsvOutputWriter();
+	private OutputWriter outputWriter;
+
+	public Runner() {
+		outputWriter = OutputWriter.instanceOf(config.getOutputType());
+	}
 
 	public static void main(String[] args) {
 
@@ -45,9 +48,13 @@ public class Runner {
 	}
 
 	private SparkConf createSparkConfig() {
-		return new SparkConf().setAppName("Oozie spark transformation")//
-				.set("fs.defaultFS", config.getDefaultFS())//
-				.set("fs.hdfs.impl", "org.apache.hadoop.hdfs.DistributedFileSystem")//
-				.set("spark.master", "local[*]");
+		SparkConf sc = new SparkConf();
+		sc.setAppName("Oozie spark transformation");
+		sc.set("spark.master", "local[*]");
+		if (config.getDefaultFS() != null) {
+			sc.set("fs.defaultFS", config.getDefaultFS());
+			sc.set("fs.hdfs.impl", "org.apache.hadoop.hdfs.DistributedFileSystem");
+		}
+		return sc;
 	}
 }

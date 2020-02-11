@@ -1,4 +1,4 @@
-package anatoliisatanovskyi.bigdata201.orchestration.oozie.service;
+package anatoliisatanovskyi.bigdata201.orchestration.service;
 
 import static org.apache.spark.sql.functions.*;
 
